@@ -226,7 +226,7 @@ public static class EndpointRouteBuilderExtensions
         return TypedResults.Ok(response);
     }
 
-    private static async Task<Ok<GetOrderResponse>> PlaceOrderAsync(
+    private static async Task<CreatedAtRoute<GetOrderResponse>> PlaceOrderAsync(
         PlaceOrderRequest request,
         ClaimsPrincipal user,
         PlaceOrderCommandHandler handler,
@@ -236,7 +236,7 @@ public static class EndpointRouteBuilderExtensions
         var command = new PlaceOrderCommand(user.GetUserId(), request.GameIds);
         var response = await handler.HandleAsync(command, cancellationToken);
 
-        return TypedResults.Ok(response);
+        return TypedResults.CreatedAtRoute(response, "GetOrderById", new { orderId = response.Id });
     }
 }
 

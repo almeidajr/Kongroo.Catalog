@@ -1,8 +1,10 @@
 using Kongroo.BuildingBlocks.Application;
 using Kongroo.BuildingBlocks.Infrastructure;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Kongroo.BuildingBlocks;
 
@@ -43,15 +45,24 @@ public static class ServiceCollectionExtensions
         {
             services.AddDbContext<TDbContext>(
                 (serviceProvider, contextOptions) =>
+                {
+                    var environment = serviceProvider.GetRequiredService<IWebHostEnvironment>();
+
                     contextOptions
-                        .EnableDetailedErrors()
-                        .EnableSensitiveDataLogging()
                         .AddInterceptors(serviceProvider.GetRequiredService<OutboxMessagesInterceptor>())
                         .UseNpgsql(
                             configuration.GetConnectionString("Database"),
                             postgresOptions => postgresOptions.MigrationsHistoryTable("migrations", TDbContext.Schema)
                         )
-                        .UseSnakeCaseNamingConvention()
+                        .UseSnakeCaseNamingConvention();
+
+                    if (environment.IsDevelopment())
+                    {
+                        contextOptions
+                            .EnableDetailedErrors()
+                            .EnableSensitiveDataLogging();
+                    }
+                }
             );
             services.AddApplicationInitializer<DbInitializer<TDbContext>>();
             return services;

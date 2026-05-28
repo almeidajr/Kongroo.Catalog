@@ -33,7 +33,7 @@ public sealed class OutboxMessageProcessor<TDbContext>(
         await context
             .Set<OutboxMessage>()
             .Where(message => message.ProcessedAt == null)
-            .OrderBy(message => message.FailedAt != null)
+            .OrderByDescending(message => message.FailedAt != null)
             .ThenBy(message => message.FailedAt)
             .ThenBy(message => message.OccurredAt)
             .ThenBy(message => message.Id)
