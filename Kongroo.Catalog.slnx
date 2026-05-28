@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Kongroo.BuildingBlocks/Kongroo.BuildingBlocks.csproj" />
+    <Project Path="src/Kongroo.Catalog/Kongroo.Catalog.csproj" />
+    <Project Path="src/Kongroo.Catalog.Api/Kongroo.Catalog.Api.csproj" />
+  </Folder>
+
+  <Folder Name="/tests/">
+    <Project Path="tests/Kongroo.Catalog.UnitTests/Kongroo.Catalog.UnitTests.csproj" />
+    <Project Path="tests/Kongroo.Catalog.IntegrationTests/Kongroo.Catalog.IntegrationTests.csproj" />
+    <Project Path="tests/Kongroo.Catalog.Specs/Kongroo.Catalog.Specs.csproj" />
+  </Folder>
+</Solution>
