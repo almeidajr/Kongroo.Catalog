@@ -1,0 +1,12 @@
+artifacts/
+tests/
+.git/
+.vs/
+.idea/
+.vscode/
+docs/
+k8s/
+*.md
+.config/
+**/.DS_Store
+**/Thumbs.db
