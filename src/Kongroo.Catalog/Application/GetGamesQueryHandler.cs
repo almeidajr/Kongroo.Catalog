@@ -37,4 +37,3 @@ public sealed class GetGamesQueryHandler(CatalogDbContext context, TimeProvider 
             .ToListAsync(cancellationToken);
     }
 }
-

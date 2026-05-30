@@ -6,4 +6,3 @@ public record OwnerId(Guid Value)
 
     public static OwnerId From(Guid value) => new(value);
 }
-

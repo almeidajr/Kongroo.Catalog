@@ -24,4 +24,3 @@ public sealed class GetGameOwnershipsQueryHandler(LibraryDbContext context)
             ))
             .ToListAsync(cancellationToken);
 }
-

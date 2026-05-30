@@ -187,4 +187,3 @@ public sealed class OrderTests
             appliedPromotionId
         );
 }
-

@@ -9,4 +9,3 @@ public static class ConfigurationExtensions
             ?? throw new InvalidOperationException($"Connection string '{name}' is not configured.");
     }
 }
-

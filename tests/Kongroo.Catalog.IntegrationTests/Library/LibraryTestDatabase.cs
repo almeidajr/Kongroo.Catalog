@@ -1,6 +1,6 @@
 using Kongroo.BuildingBlocks.Infrastructure;
-using Kongroo.Catalog.IntegrationTests.Fixtures;
 using Kongroo.Catalog.Infrastructure;
+using Kongroo.Catalog.IntegrationTests.Fixtures;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kongroo.Catalog.IntegrationTests.Library;
@@ -34,4 +34,3 @@ public sealed class LibraryTestDatabase(PostgreSqlFixture fixture)
         await context.Database.ExecuteSqlRawAsync(truncateTablesSql, cancellationToken);
     }
 }
-

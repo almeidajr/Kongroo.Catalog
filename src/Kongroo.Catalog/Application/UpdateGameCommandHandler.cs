@@ -43,4 +43,3 @@ public sealed class UpdateGameCommandHandler(CatalogDbContext context, TimeProvi
         );
     }
 }
-

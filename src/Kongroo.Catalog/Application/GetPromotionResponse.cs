@@ -9,4 +9,3 @@ public sealed record GetPromotionResponse(
     [property: Description("Instant when the promotion becomes active.")] DateTimeOffset StartsAt,
     [property: Description("Instant when the promotion stops being active.")] DateTimeOffset EndsAt
 );
-

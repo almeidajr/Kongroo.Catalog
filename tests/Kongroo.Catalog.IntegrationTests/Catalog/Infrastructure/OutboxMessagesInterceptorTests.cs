@@ -101,4 +101,3 @@ public sealed class OutboxMessagesInterceptorTests(PostgreSqlFixture postgreSqlF
             Money.From(19.99m, Currency.Usd)
         );
 }
-

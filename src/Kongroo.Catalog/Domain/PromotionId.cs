@@ -6,4 +6,3 @@ public record PromotionId(Guid Value)
 
     public static PromotionId From(Guid value) => new(value);
 }
-

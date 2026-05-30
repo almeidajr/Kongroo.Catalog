@@ -27,4 +27,3 @@ public sealed class GameOwnershipConfiguration : IEntityTypeConfiguration<GameOw
         builder.HasIndex(gameOwnership => new { gameOwnership.OwnerId, gameOwnership.GameId }).IsUnique();
     }
 }
-

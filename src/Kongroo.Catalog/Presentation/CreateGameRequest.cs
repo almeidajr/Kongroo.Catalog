@@ -22,4 +22,3 @@ public sealed record CreateGameRequest(
         decimal PriceAmount,
     [property: Description("Current game price currency code.")] Currency Currency
 );
-

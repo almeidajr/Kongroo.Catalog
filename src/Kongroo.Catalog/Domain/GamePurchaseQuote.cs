@@ -7,4 +7,3 @@ public sealed record GamePurchaseQuote(
     Money FinalPrice,
     PromotionId? AppliedPromotionId
 );
-

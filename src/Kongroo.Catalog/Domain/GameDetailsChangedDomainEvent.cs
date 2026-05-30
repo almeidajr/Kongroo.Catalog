@@ -9,4 +9,3 @@ public record GameDetailsChangedDomainEvent(
     GameDescription PreviousDescription,
     GameDescription CurrentDescription
 ) : DomainEvent;
-

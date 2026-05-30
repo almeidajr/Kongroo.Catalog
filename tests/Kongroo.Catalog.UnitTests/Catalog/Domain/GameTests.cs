@@ -351,4 +351,3 @@ public sealed class GameTests
             Money.From(19.99m, Currency.Usd)
         );
 }
-

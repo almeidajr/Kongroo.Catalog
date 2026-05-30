@@ -13,4 +13,3 @@ public sealed class PostgreSqlFixture(IMessageSink messageSink)
 
     protected override PostgreSqlBuilder Configure() => new("postgres:18.3");
 }
-

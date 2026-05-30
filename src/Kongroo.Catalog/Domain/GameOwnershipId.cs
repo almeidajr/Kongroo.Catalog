@@ -6,4 +6,3 @@ public record GameOwnershipId(Guid Value)
 
     public static GameOwnershipId From(Guid value) => new(value);
 }
-

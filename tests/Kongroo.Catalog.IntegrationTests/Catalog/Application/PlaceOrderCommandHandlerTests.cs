@@ -374,4 +374,3 @@ public sealed class PlaceOrderCommandHandlerTests(PostgreSqlFixture postgreSqlFi
         );
     }
 }
-

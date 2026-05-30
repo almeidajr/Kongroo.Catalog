@@ -11,4 +11,3 @@ public sealed record GetOrderResponse(
     [property: Description("Currency used by the order total.")] Currency Currency,
     [property: Description("Snapshot of the purchased order lines.")] IReadOnlyList<GetOrderLineResponse> Lines
 );
-

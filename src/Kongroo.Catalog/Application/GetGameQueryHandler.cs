@@ -39,4 +39,3 @@ public sealed class GetGameQueryHandler(CatalogDbContext context, TimeProvider t
         return game;
     }
 }
-

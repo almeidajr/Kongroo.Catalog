@@ -53,4 +53,3 @@ namespace Kongroo.Catalog.Infrastructure.Migrations
         }
     }
 }
-

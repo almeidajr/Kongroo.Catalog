@@ -17,4 +17,3 @@ public sealed class OrderPlacedDomainEventHandler(IEventBus eventBus) : DomainEv
             cancellationToken
         );
 }
-

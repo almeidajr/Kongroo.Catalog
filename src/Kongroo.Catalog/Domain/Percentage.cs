@@ -28,4 +28,3 @@ public sealed record Percentage(decimal Value) : IMinMaxValue<Percentage>
 
     public decimal ApplyTo(decimal amount) => amount * ToFraction();
 }
-

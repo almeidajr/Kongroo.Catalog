@@ -23,4 +23,3 @@ public sealed record Money(decimal Amount, Currency Currency)
         return From(discountedAmount, Currency);
     }
 }
-

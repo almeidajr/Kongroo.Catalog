@@ -86,4 +86,3 @@ public sealed class Order : Entity<OrderId>
         return currency;
     }
 }
-

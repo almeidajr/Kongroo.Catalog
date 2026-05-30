@@ -68,4 +68,3 @@ public sealed class GameConfiguration : IEntityTypeConfiguration<Game>
         builder.Navigation(game => game.Promotions).UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }
-

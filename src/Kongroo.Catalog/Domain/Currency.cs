@@ -43,4 +43,3 @@ public static class CurrencyMappings
             _ => throw new ArgumentException($"Unsupported currency: {code}", nameof(code)),
         };
 }
-

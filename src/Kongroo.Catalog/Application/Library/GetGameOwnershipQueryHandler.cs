@@ -27,4 +27,3 @@ public sealed class GetGameOwnershipQueryHandler(LibraryDbContext context)
             .SingleOrDefaultAsync(cancellationToken)
         ?? throw new NotFoundException(nameof(GameOwnership), $"identifier '{query.OwnershipId}'");
 }
-

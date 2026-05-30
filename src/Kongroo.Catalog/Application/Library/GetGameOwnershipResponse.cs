@@ -9,4 +9,3 @@ public sealed record GetGameOwnershipResponse(
     [property: Description("Unique identifier of the order that granted the ownership.")] Guid OrderId,
     [property: Description("Instant when the ownership was acquired.")] DateTimeOffset AcquiredAt
 );
-

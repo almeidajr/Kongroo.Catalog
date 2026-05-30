@@ -9,4 +9,3 @@ public sealed record OrderPlacedDomainEvent(
     Money Total,
     IReadOnlyList<GameId> GameIds
 ) : DomainEvent;
-

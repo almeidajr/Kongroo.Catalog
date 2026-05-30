@@ -69,4 +69,3 @@ public sealed class CreateGameCommandHandlerTests(PostgreSqlFixture postgreSqlFi
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }
-

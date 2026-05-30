@@ -38,5 +38,3 @@ namespace Kongroo.Catalog.Infrastructure.Library.Migrations
         }
     }
 }
-
-

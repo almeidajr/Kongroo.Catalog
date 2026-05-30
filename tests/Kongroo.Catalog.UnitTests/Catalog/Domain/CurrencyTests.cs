@@ -81,4 +81,3 @@ public sealed class CurrencyTests
         roundTripCodes.ShouldBe(codes);
     }
 }
-

@@ -38,4 +38,3 @@ public sealed class GetOrderQueryHandler(CatalogDbContext context)
         return order;
     }
 }
-

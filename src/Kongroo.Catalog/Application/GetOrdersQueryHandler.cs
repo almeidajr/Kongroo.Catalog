@@ -38,4 +38,3 @@ public sealed class GetOrdersQueryHandler(CatalogDbContext context)
             .ToListAsync(cancellationToken);
     }
 }
-

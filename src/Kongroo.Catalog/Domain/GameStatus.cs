@@ -6,4 +6,3 @@ public enum GameStatus
     Published = 1,
     Inactive = 2,
 }
-

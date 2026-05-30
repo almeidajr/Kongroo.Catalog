@@ -6,4 +6,3 @@ public record BuyerId(Guid Value)
 
     public static BuyerId From(Guid value) => new(value);
 }
-

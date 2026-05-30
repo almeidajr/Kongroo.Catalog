@@ -174,4 +174,3 @@ public sealed class OutboxMessageProcessorTests(PostgreSqlFixture postgreSqlFixt
             throw new InvalidOperationException(message);
     }
 }
-

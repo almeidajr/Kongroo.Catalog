@@ -271,4 +271,3 @@ public sealed class CatalogToLibraryIntegrationTests(PostgreSqlFixture postgreSq
         }
     }
 }
-

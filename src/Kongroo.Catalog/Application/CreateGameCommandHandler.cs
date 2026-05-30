@@ -26,4 +26,3 @@ public sealed class CreateGameCommandHandler(CatalogDbContext context)
         );
     }
 }
-

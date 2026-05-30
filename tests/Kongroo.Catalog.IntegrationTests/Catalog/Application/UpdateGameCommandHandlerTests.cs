@@ -128,4 +128,3 @@ public sealed class UpdateGameCommandHandlerTests(PostgreSqlFixture postgreSqlFi
         return new GameId(response.Id);
     }
 }
-

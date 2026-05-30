@@ -37,4 +37,3 @@ public sealed class CatalogTestDatabase(PostgreSqlFixture fixture)
         await context.Database.ExecuteSqlRawAsync(truncateTablesSql, cancellationToken);
     }
 }
-

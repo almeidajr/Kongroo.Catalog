@@ -13,4 +13,3 @@ public sealed record GetOrderLineResponse(
     [property: Description("Promotion applied to the line when one was active during purchase.")]
         Guid? AppliedPromotionId
 );
-

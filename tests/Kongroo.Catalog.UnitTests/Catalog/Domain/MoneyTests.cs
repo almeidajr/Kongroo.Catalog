@@ -33,4 +33,3 @@ public sealed class MoneyTests
         discountedMoney.ShouldBe(Money.From(5.03m, Currency.Usd));
     }
 }
-

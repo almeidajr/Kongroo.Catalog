@@ -19,4 +19,3 @@ public sealed class DeleteGameCommandHandler(CatalogDbContext context)
         await context.SaveChangesAsync(cancellationToken);
     }
 }
-

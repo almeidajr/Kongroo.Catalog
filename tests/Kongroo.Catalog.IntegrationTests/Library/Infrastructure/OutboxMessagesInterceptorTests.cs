@@ -1,5 +1,5 @@
-using Kongroo.Catalog.IntegrationTests.Fixtures;
 using Kongroo.Catalog.Domain;
+using Kongroo.Catalog.IntegrationTests.Fixtures;
 using Microsoft.EntityFrameworkCore;
 using Shouldly;
 
@@ -73,4 +73,3 @@ public sealed class OutboxMessagesInterceptorTests(PostgreSqlFixture postgreSqlF
     private static GameOwnership CreateOwnership() =>
         GameOwnership.AcquireFromOrder(OwnerId.Create(), GameId.Create(), OrderId.Create(), DateTimeOffset.UtcNow);
 }
-

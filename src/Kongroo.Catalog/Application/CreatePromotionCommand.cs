@@ -6,4 +6,3 @@ public sealed record CreatePromotionCommand(
     DateTimeOffset StartsAt,
     DateTimeOffset EndsAt
 );
-

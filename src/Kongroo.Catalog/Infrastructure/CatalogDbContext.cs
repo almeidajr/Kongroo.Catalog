@@ -21,4 +21,3 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
         modelBuilder.ApplyConfiguration(new OrderConfiguration());
     }
 }
-

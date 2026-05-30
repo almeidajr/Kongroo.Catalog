@@ -91,4 +91,3 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Navigation(order => order.Lines).UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }
-

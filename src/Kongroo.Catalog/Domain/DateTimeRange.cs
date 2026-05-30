@@ -21,4 +21,3 @@ public sealed record DateTimeRange(DateTimeOffset Start, DateTimeOffset End)
         return Start < other.End && other.Start < End;
     }
 }
-

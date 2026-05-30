@@ -115,4 +115,3 @@ public sealed class Game : Entity<GameId>
         return new GamePurchaseQuote(Id, Title, Price, finalPrice, promotion?.Id);
     }
 }
-

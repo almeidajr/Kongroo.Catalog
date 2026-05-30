@@ -63,4 +63,3 @@ public sealed class DeleteGameCommandHandlerTests(PostgreSqlFixture postgreSqlFi
         return new GameId(response.Id);
     }
 }
-

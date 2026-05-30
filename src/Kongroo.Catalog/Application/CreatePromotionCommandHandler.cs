@@ -35,4 +35,3 @@ public sealed class CreatePromotionCommandHandler(CatalogDbContext context)
         );
     }
 }
-

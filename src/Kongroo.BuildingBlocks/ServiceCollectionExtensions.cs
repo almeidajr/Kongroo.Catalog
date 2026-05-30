@@ -58,9 +58,7 @@ public static class ServiceCollectionExtensions
 
                     if (environment.IsDevelopment())
                     {
-                        contextOptions
-                            .EnableDetailedErrors()
-                            .EnableSensitiveDataLogging();
+                        contextOptions.EnableDetailedErrors().EnableSensitiveDataLogging();
                     }
                 }
             );

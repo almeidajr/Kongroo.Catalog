@@ -28,4 +28,3 @@ public sealed record OrderLine
         };
     }
 }
-

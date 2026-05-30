@@ -47,4 +47,3 @@ public sealed class GameOwnership : Entity<GameOwnershipId>
         return ownership;
     }
 }
-

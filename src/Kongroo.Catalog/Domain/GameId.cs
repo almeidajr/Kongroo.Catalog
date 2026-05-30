@@ -6,4 +6,3 @@ public record GameId(Guid Value)
 
     public static GameId From(Guid value) => new(value);
 }
-

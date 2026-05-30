@@ -10,4 +10,3 @@ public sealed record UpdateGameCommand(
     Currency Currency,
     GameStatus Status
 );
-

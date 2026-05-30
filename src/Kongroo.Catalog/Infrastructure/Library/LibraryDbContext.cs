@@ -18,4 +18,3 @@ public sealed class LibraryDbContext(DbContextOptions<LibraryDbContext> options)
         modelBuilder.ApplyConfiguration(new GameOwnershipConfiguration());
     }
 }
-

@@ -9,4 +9,3 @@ public record GameAcquiredDomainEvent(
     OrderId OrderId,
     DateTimeOffset AcquiredAt
 ) : DomainEvent;
-

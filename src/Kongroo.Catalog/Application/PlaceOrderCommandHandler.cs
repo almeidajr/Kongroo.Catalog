@@ -79,4 +79,3 @@ public sealed class PlaceOrderCommandHandler(CatalogDbContext context, TimeProvi
         }
     }
 }
-

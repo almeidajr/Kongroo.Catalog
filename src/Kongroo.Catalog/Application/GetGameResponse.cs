@@ -13,4 +13,3 @@ public sealed record GetGameResponse(
     [property: Description("Currently active promotion for the game, when one exists.")]
         GetPromotionResponse? ActivePromotion
 );
-

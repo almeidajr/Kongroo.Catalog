@@ -68,4 +68,3 @@ public static class LibraryEndpointRouteBuilderExtensions
         return TypedResults.Ok(response);
     }
 }
-

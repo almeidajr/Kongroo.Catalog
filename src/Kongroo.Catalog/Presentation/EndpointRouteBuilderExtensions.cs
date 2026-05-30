@@ -239,4 +239,3 @@ public static class EndpointRouteBuilderExtensions
         return TypedResults.CreatedAtRoute(response, "GetOrderById", new { orderId = response.Id });
     }
 }
-

@@ -1,8 +1,8 @@
 using Kongroo.BuildingBlocks.Domain.Exceptions;
-using Kongroo.Catalog.IntegrationTests.Fixtures;
 using Kongroo.Catalog.Application;
 using Kongroo.Catalog.Domain;
 using Kongroo.Catalog.Infrastructure;
+using Kongroo.Catalog.IntegrationTests.Fixtures;
 using Microsoft.EntityFrameworkCore;
 using Shouldly;
 
@@ -111,4 +111,3 @@ public sealed class AcquireGameOwnershipCommandHandlerTests(PostgreSqlFixture po
         );
     }
 }
-

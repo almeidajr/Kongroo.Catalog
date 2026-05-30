@@ -8,4 +8,3 @@ public record PromotionCreatedDomainEvent(
     Percentage Discount,
     DateTimeRange ActiveRange
 ) : DomainEvent;
-

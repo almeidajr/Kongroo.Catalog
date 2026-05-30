@@ -23,4 +23,3 @@ public sealed record UpdateGameRequest(
     [property: Description("Current game price currency code.")] Currency Currency,
     [property: Description("Current publishing status of the game.")] GameStatus Status
 );
-

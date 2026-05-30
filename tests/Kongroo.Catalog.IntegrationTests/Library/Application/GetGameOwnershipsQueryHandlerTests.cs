@@ -1,6 +1,6 @@
-using Kongroo.Catalog.IntegrationTests.Fixtures;
 using Kongroo.Catalog.Application;
 using Kongroo.Catalog.Infrastructure;
+using Kongroo.Catalog.IntegrationTests.Fixtures;
 using Shouldly;
 
 namespace Kongroo.Catalog.IntegrationTests.Library.Application;
@@ -94,4 +94,3 @@ public sealed class GetGameOwnershipsQueryHandlerTests(PostgreSqlFixture postgre
         );
     }
 }
-
