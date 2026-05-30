@@ -54,7 +54,7 @@ builder
     .Services.AddHealthChecks()
     .AddApplicationLifecycleHealthCheck()
     .AddResourceUtilizationHealthCheck()
-    .AddNpgSql(builder.Configuration.GetRequiredConnectionString("Database"))
+    .AddNpgSql(_ => builder.Configuration.GetRequiredConnectionString("Database"))
     .AddDbContextCheck<CatalogDbContext>()
     .AddDbContextCheck<LibraryDbContext>();
 
