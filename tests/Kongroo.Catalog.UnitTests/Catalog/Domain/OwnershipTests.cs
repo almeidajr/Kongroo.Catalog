@@ -3,39 +3,39 @@ using Shouldly;
 
 namespace Kongroo.Catalog.UnitTests.Catalog.Domain;
 
-public sealed class GameOwnershipTests
+public sealed class OwnershipTests
 {
     [Fact]
-    public void AcquireFromOrder_ShouldCreateGameOwnership()
+    public void AcquireFromOrder_ShouldCreateOwnership()
     {
         // Arrange
-        var ownerId = OwnerId.From(Guid.NewGuid());
+        var customerId = CustomerId.From(Guid.NewGuid());
         var gameId = GameId.From(Guid.NewGuid());
         var orderId = OrderId.From(Guid.NewGuid());
         var acquiredAt = new DateTimeOffset(2026, 3, 31, 12, 0, 0, TimeSpan.Zero);
 
         // Act
-        var ownership = GameOwnership.AcquireFromOrder(ownerId, gameId, orderId, acquiredAt);
+        var ownership = Ownership.AcquireFromOrder(customerId, gameId, orderId, acquiredAt);
 
         // Assert
         ownership.Id.ShouldNotBeNull();
     }
 
     [Fact]
-    public void AcquireFromOrder_ShouldStoreOwnerIdGameIdOrderIdAndAcquiredAt()
+    public void AcquireFromOrder_ShouldStoreCustomerIdGameIdOrderIdAndAcquiredAt()
     {
         // Arrange
-        var ownerId = OwnerId.From(Guid.NewGuid());
+        var customerId = CustomerId.From(Guid.NewGuid());
         var gameId = GameId.From(Guid.NewGuid());
         var orderId = OrderId.From(Guid.NewGuid());
         var acquiredAt = new DateTimeOffset(2026, 3, 31, 12, 0, 0, TimeSpan.Zero);
 
         // Act
-        var ownership = GameOwnership.AcquireFromOrder(ownerId, gameId, orderId, acquiredAt);
+        var ownership = Ownership.AcquireFromOrder(customerId, gameId, orderId, acquiredAt);
 
         // Assert
         ownership.ShouldSatisfyAllConditions(
-            () => ownership.OwnerId.ShouldBe(ownerId),
+            () => ownership.CustomerId.ShouldBe(customerId),
             () => ownership.GameId.ShouldBe(gameId),
             () => ownership.OrderId.ShouldBe(orderId),
             () => ownership.AcquiredAt.ShouldBe(acquiredAt)
@@ -46,19 +46,19 @@ public sealed class GameOwnershipTests
     public void AcquireFromOrder_ShouldRaiseGameAcquiredDomainEvent()
     {
         // Arrange
-        var ownerId = OwnerId.From(Guid.NewGuid());
+        var customerId = CustomerId.From(Guid.NewGuid());
         var gameId = GameId.From(Guid.NewGuid());
         var orderId = OrderId.From(Guid.NewGuid());
         var acquiredAt = new DateTimeOffset(2026, 3, 31, 12, 0, 0, TimeSpan.Zero);
 
         // Act
-        var ownership = GameOwnership.AcquireFromOrder(ownerId, gameId, orderId, acquiredAt);
+        var ownership = Ownership.AcquireFromOrder(customerId, gameId, orderId, acquiredAt);
 
         // Assert
         var domainEvent = ownership.DomainEvents.Single().ShouldBeOfType<GameAcquiredDomainEvent>();
         domainEvent.ShouldSatisfyAllConditions(
-            () => domainEvent.GameOwnershipId.ShouldBe(ownership.Id),
-            () => domainEvent.OwnerId.ShouldBe(ownerId),
+            () => domainEvent.OwnershipId.ShouldBe(ownership.Id),
+            () => domainEvent.CustomerId.ShouldBe(customerId),
             () => domainEvent.GameId.ShouldBe(gameId),
             () => domainEvent.OrderId.ShouldBe(orderId),
             () => domainEvent.AcquiredAt.ShouldBe(acquiredAt)

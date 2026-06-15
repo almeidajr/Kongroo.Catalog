@@ -3,8 +3,8 @@ using Kongroo.BuildingBlocks.Domain;
 namespace Kongroo.Catalog.Domain;
 
 public record GameAcquiredDomainEvent(
-    GameOwnershipId GameOwnershipId,
-    OwnerId OwnerId,
+    OwnershipId OwnershipId,
+    CustomerId CustomerId,
     GameId GameId,
     OrderId OrderId,
     DateTimeOffset AcquiredAt

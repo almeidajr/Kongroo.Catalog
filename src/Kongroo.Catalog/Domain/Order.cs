@@ -9,7 +9,7 @@ public sealed class Order : Entity<OrderId>
 
     private Order() { }
 
-    public BuyerId BuyerId { get; private set; } = null!;
+    public CustomerId CustomerId { get; private set; } = null!;
 
     public DateTimeOffset PurchasedAt { get; private set; }
 
@@ -18,12 +18,12 @@ public sealed class Order : Entity<OrderId>
     public IReadOnlyCollection<OrderLine> Lines => _lines.AsReadOnly();
 
     public static Order PlaceCompleted(
-        BuyerId buyerId,
+        CustomerId customerId,
         IReadOnlyList<GamePurchaseQuote> quotes,
         DateTimeOffset purchasedAt
     )
     {
-        ArgumentNullException.ThrowIfNull(buyerId);
+        ArgumentNullException.ThrowIfNull(customerId);
         ArgumentNullException.ThrowIfNull(quotes);
 
         if (quotes.Count == 0)
@@ -41,7 +41,7 @@ public sealed class Order : Entity<OrderId>
         var order = new Order
         {
             Id = OrderId.Create(),
-            BuyerId = buyerId,
+            CustomerId = customerId,
             PurchasedAt = purchasedAt,
             Total = Money.From(quotes.Sum(quote => quote.FinalPrice.Amount), currency),
         };
@@ -51,7 +51,7 @@ public sealed class Order : Entity<OrderId>
         order.RaiseDomainEvent(
             new OrderPlacedDomainEvent(
                 order.Id,
-                order.BuyerId,
+                order.CustomerId,
                 order.PurchasedAt,
                 order.Total,
                 [.. order._lines.Select(line => line.GameId)]

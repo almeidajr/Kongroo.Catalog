@@ -19,23 +19,23 @@ public static class LibraryEndpointRouteBuilderExtensions
             var ownershipsGroup = routeGroup.MapGroup("/ownerships");
 
             ownershipsGroup
-                .MapGet("/", GetGameOwnershipsAsync)
+                .MapGet("/", GetOwnershipsAsync)
                 .RequireAuthorization()
                 .ProducesProblem(StatusCodes.Status401Unauthorized)
                 .ProducesProblem(StatusCodes.Status500InternalServerError)
-                .WithName("GetGameOwnerships")
+                .WithName("GetOwnerships")
                 .WithSummary("Get ownerships")
                 .WithDescription(
                     "Returns the authenticated user's library ownership records ordered by most recent acquisition."
                 );
 
             ownershipsGroup
-                .MapGet("/{ownershipId:guid}", GetGameOwnershipAsync)
+                .MapGet("/{ownershipId:guid}", GetOwnershipAsync)
                 .RequireAuthorization()
                 .ProducesProblem(StatusCodes.Status401Unauthorized)
                 .ProducesProblem(StatusCodes.Status404NotFound)
                 .ProducesProblem(StatusCodes.Status500InternalServerError)
-                .WithName("GetGameOwnershipById")
+                .WithName("GetOwnershipById")
                 .WithSummary("Get an ownership")
                 .WithDescription("Returns a single ownership record owned by the authenticated user.");
 
@@ -43,26 +43,26 @@ public static class LibraryEndpointRouteBuilderExtensions
         }
     }
 
-    private static async Task<Ok<IReadOnlyList<GetGameOwnershipResponse>>> GetGameOwnershipsAsync(
+    private static async Task<Ok<IReadOnlyList<GetOwnershipResponse>>> GetOwnershipsAsync(
         ClaimsPrincipal user,
-        GetGameOwnershipsQueryHandler handler,
+        GetOwnershipsQueryHandler handler,
         CancellationToken cancellationToken
     )
     {
-        var query = new GetGameOwnershipsQuery(user.GetUserId());
+        var query = new GetOwnershipsQuery(user.GetUserId());
         var response = await handler.HandleAsync(query, cancellationToken);
 
         return TypedResults.Ok(response);
     }
 
-    private static async Task<Ok<GetGameOwnershipResponse>> GetGameOwnershipAsync(
+    private static async Task<Ok<GetOwnershipResponse>> GetOwnershipAsync(
         [Description("Unique identifier of the ownership to retrieve.")] Guid ownershipId,
         ClaimsPrincipal user,
-        GetGameOwnershipQueryHandler handler,
+        GetOwnershipQueryHandler handler,
         CancellationToken cancellationToken
     )
     {
-        var query = new GetGameOwnershipQuery(user.GetUserId(), ownershipId);
+        var query = new GetOwnershipQuery(user.GetUserId(), ownershipId);
         var response = await handler.HandleAsync(query, cancellationToken);
 
         return TypedResults.Ok(response);

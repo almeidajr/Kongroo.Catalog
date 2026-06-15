@@ -2,11 +2,11 @@ using Kongroo.BuildingBlocks.Domain;
 
 namespace Kongroo.Catalog.Domain;
 
-public sealed class GameOwnership : Entity<GameOwnershipId>
+public sealed class Ownership : Entity<OwnershipId>
 {
-    private GameOwnership() { }
+    private Ownership() { }
 
-    public required OwnerId OwnerId { get; init; }
+    public required CustomerId CustomerId { get; init; }
 
     public required GameId GameId { get; init; }
 
@@ -14,21 +14,21 @@ public sealed class GameOwnership : Entity<GameOwnershipId>
 
     public required DateTimeOffset AcquiredAt { get; init; }
 
-    public static GameOwnership AcquireFromOrder(
-        OwnerId ownerId,
+    public static Ownership AcquireFromOrder(
+        CustomerId customerId,
         GameId gameId,
         OrderId orderId,
         DateTimeOffset acquiredAt
     )
     {
-        ArgumentNullException.ThrowIfNull(ownerId);
+        ArgumentNullException.ThrowIfNull(customerId);
         ArgumentNullException.ThrowIfNull(gameId);
         ArgumentNullException.ThrowIfNull(orderId);
 
-        var ownership = new GameOwnership
+        var ownership = new Ownership
         {
-            Id = GameOwnershipId.Create(),
-            OwnerId = ownerId,
+            Id = OwnershipId.Create(),
+            CustomerId = customerId,
             GameId = gameId,
             OrderId = orderId,
             AcquiredAt = acquiredAt,
@@ -37,7 +37,7 @@ public sealed class GameOwnership : Entity<GameOwnershipId>
         ownership.RaiseDomainEvent(
             new GameAcquiredDomainEvent(
                 ownership.Id,
-                ownership.OwnerId,
+                ownership.CustomerId,
                 ownership.GameId,
                 ownership.OrderId,
                 ownership.AcquiredAt

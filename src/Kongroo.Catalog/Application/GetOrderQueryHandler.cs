@@ -9,14 +9,14 @@ public sealed class GetOrderQueryHandler(CatalogDbContext context)
 {
     public async Task<GetOrderResponse> HandleAsync(GetOrderQuery query, CancellationToken cancellationToken)
     {
-        var buyerId = BuyerId.From(query.BuyerId);
+        var customerId = CustomerId.From(query.CustomerId);
         var order =
             await context
                 .Orders.AsNoTracking()
-                .Where(candidate => candidate.BuyerId == buyerId && candidate.Id == OrderId.From(query.OrderId))
+                .Where(candidate => candidate.CustomerId == customerId && candidate.Id == OrderId.From(query.OrderId))
                 .Select(order => new GetOrderResponse(
                     order.Id.Value,
-                    order.BuyerId.Value,
+                    order.CustomerId.Value,
                     order.PurchasedAt,
                     order.Total.Amount,
                     order.Total.Currency,

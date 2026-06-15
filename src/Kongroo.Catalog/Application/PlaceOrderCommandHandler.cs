@@ -25,10 +25,10 @@ public sealed class PlaceOrderCommandHandler(CatalogDbContext context, TimeProvi
             throw new NotFoundException(nameof(Game), $"identifier '{missingGameId.Value}'");
         }
 
-        var buyerId = BuyerId.From(command.BuyerId);
+        var customerId = CustomerId.From(command.CustomerId);
         var ownedGameIds = await context
             .Orders.AsNoTracking()
-            .Where(order => order.BuyerId == buyerId)
+            .Where(order => order.CustomerId == customerId)
             .SelectMany(order => order.Lines)
             .Select(line => line.GameId)
             .ToListAsync(cancellationToken);
@@ -42,14 +42,14 @@ public sealed class PlaceOrderCommandHandler(CatalogDbContext context, TimeProvi
         var purchasedAt = timeProvider.GetUtcNow();
 
         var quotes = games.Values.Select(game => game.QuotePurchase(purchasedAt)).ToList();
-        var order = Order.PlaceCompleted(buyerId, quotes, purchasedAt);
+        var order = Order.PlaceCompleted(customerId, quotes, purchasedAt);
 
         context.Orders.Add(order);
         await context.SaveChangesAsync(cancellationToken);
 
         return new GetOrderResponse(
             order.Id.Value,
-            order.BuyerId.Value,
+            order.CustomerId.Value,
             order.PurchasedAt,
             order.Total.Amount,
             order.Total.Currency,

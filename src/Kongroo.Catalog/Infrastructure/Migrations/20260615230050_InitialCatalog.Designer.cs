@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kongroo.Catalog.Infrastructure.Migrations
 {
     [DbContext(typeof(CatalogDbContext))]
-    [Migration("20260615224155_InitialCatalog")]
+    [Migration("20260615230050_InitialCatalog")]
     partial class InitialCatalog
     {
         /// <inheritdoc />
@@ -114,48 +114,15 @@ namespace Kongroo.Catalog.Infrastructure.Migrations
                     b.ToTable("games", "catalog");
                 });
 
-            modelBuilder.Entity("Kongroo.Catalog.Domain.GameOwnership", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset>("AcquiredAt")
-                        .HasPrecision(0)
-                        .HasColumnType("timestamp(0) with time zone")
-                        .HasColumnName("acquired_at");
-
-                    b.Property<Guid>("GameId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("game_id");
-
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("order_id");
-
-                    b.Property<Guid>("OwnerId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("owner_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_game_ownerships");
-
-                    b.HasIndex("OwnerId", "GameId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_game_ownerships_owner_id_game_id");
-
-                    b.ToTable("game_ownerships", "catalog");
-                });
-
             modelBuilder.Entity("Kongroo.Catalog.Domain.Order", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<Guid>("BuyerId")
+                    b.Property<Guid>("CustomerId")
                         .HasColumnType("uuid")
-                        .HasColumnName("buyer_id");
+                        .HasColumnName("customer_id");
 
                     b.Property<DateTimeOffset>("PurchasedAt")
                         .HasPrecision(0)
@@ -183,6 +150,39 @@ namespace Kongroo.Catalog.Infrastructure.Migrations
                         .HasName("pk_orders");
 
                     b.ToTable("orders", "catalog");
+                });
+
+            modelBuilder.Entity("Kongroo.Catalog.Domain.Ownership", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("AcquiredAt")
+                        .HasPrecision(0)
+                        .HasColumnType("timestamp(0) with time zone")
+                        .HasColumnName("acquired_at");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("customer_id");
+
+                    b.Property<Guid>("GameId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("game_id");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("order_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_ownerships");
+
+                    b.HasIndex("CustomerId", "GameId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_ownerships_customer_id_game_id");
+
+                    b.ToTable("ownerships", "catalog");
                 });
 
             modelBuilder.Entity("Kongroo.Catalog.Domain.Game", b =>

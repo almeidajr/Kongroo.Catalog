@@ -11,15 +11,15 @@ public sealed class GetOrdersQueryHandler(CatalogDbContext context)
         CancellationToken cancellationToken
     )
     {
-        var buyerId = BuyerId.From(query.BuyerId);
+        var customerId = CustomerId.From(query.CustomerId);
         return await context
             .Orders.AsNoTracking()
-            .Where(order => order.BuyerId == buyerId)
+            .Where(order => order.CustomerId == customerId)
             .OrderByDescending(order => order.PurchasedAt)
             .ThenByDescending(order => order.Id)
             .Select(order => new GetOrderResponse(
                 order.Id.Value,
-                order.BuyerId.Value,
+                order.CustomerId.Value,
                 order.PurchasedAt,
                 order.Total.Amount,
                 order.Total.Currency,

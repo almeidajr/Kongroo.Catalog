@@ -29,10 +29,10 @@ public sealed class GetOrderQueryHandlerTests(PostgreSqlFixture postgreSqlFixtur
             purchasedAt.AddDays(1),
             TestContext.Current.CancellationToken
         );
-        var buyerId = BuyerId.Create();
+        var customerId = CustomerId.Create();
         var order = await PlaceOrderAsync(
             context,
-            buyerId,
+            customerId,
             [gameId],
             purchasedAt,
             TestContext.Current.CancellationToken
@@ -41,14 +41,14 @@ public sealed class GetOrderQueryHandlerTests(PostgreSqlFixture postgreSqlFixtur
 
         // Act
         var response = await handler.HandleAsync(
-            new GetOrderQuery(buyerId.Value, order.Id),
+            new GetOrderQuery(customerId.Value, order.Id),
             TestContext.Current.CancellationToken
         );
 
         // Assert
         response.ShouldSatisfyAllConditions(
             () => response.Id.ShouldBe(order.Id),
-            () => response.BuyerId.ShouldBe(buyerId.Value),
+            () => response.CustomerId.ShouldBe(customerId.Value),
             () => response.PurchasedAt.ShouldBe(purchasedAt),
             () => response.TotalAmount.ShouldBe(10m),
             () => response.Currency.ShouldBe(Currency.Usd),
@@ -76,7 +76,7 @@ public sealed class GetOrderQueryHandlerTests(PostgreSqlFixture postgreSqlFixtur
         // Act
         var exception = await Should.ThrowAsync<NotFoundException>(() =>
             handler.HandleAsync(
-                new GetOrderQuery(BuyerId.Create().Value, missingOrderId),
+                new GetOrderQuery(CustomerId.Create().Value, missingOrderId),
                 TestContext.Current.CancellationToken
             )
         );
@@ -92,8 +92,8 @@ public sealed class GetOrderQueryHandlerTests(PostgreSqlFixture postgreSqlFixtur
         // Arrange
         await using var context = _database.CreateDbContext();
         var gameId = await CreatePublishedGameAsync(context, "Portal", 20m, TestContext.Current.CancellationToken);
-        var ownerId = BuyerId.Create();
-        var otherBuyerId = BuyerId.Create();
+        var ownerId = CustomerId.Create();
+        var otherCustomerId = CustomerId.Create();
         var order = await PlaceOrderAsync(
             context,
             ownerId,
@@ -105,7 +105,10 @@ public sealed class GetOrderQueryHandlerTests(PostgreSqlFixture postgreSqlFixtur
 
         // Act
         var exception = await Should.ThrowAsync<NotFoundException>(() =>
-            handler.HandleAsync(new GetOrderQuery(otherBuyerId.Value, order.Id), TestContext.Current.CancellationToken)
+            handler.HandleAsync(
+                new GetOrderQuery(otherCustomerId.Value, order.Id),
+                TestContext.Current.CancellationToken
+            )
         );
 
         // Assert
@@ -164,7 +167,7 @@ public sealed class GetOrderQueryHandlerTests(PostgreSqlFixture postgreSqlFixtur
 
     private static async Task<GetOrderResponse> PlaceOrderAsync(
         CatalogDbContext context,
-        BuyerId buyerId,
+        CustomerId customerId,
         IReadOnlyList<GameId> gameIds,
         DateTimeOffset purchasedAt,
         CancellationToken cancellationToken
@@ -172,7 +175,7 @@ public sealed class GetOrderQueryHandlerTests(PostgreSqlFixture postgreSqlFixtur
     {
         var handler = new PlaceOrderCommandHandler(context, new FakeTimeProvider(purchasedAt));
         return await handler.HandleAsync(
-            new PlaceOrderCommand(buyerId.Value, [.. gameIds.Select(gameId => gameId.Value)]),
+            new PlaceOrderCommand(customerId.Value, [.. gameIds.Select(gameId => gameId.Value)]),
             cancellationToken
         );
     }

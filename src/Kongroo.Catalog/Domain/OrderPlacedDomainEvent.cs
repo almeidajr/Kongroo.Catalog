@@ -4,7 +4,7 @@ namespace Kongroo.Catalog.Domain;
 
 public sealed record OrderPlacedDomainEvent(
     OrderId OrderId,
-    BuyerId BuyerId,
+    CustomerId CustomerId,
     DateTimeOffset PurchasedAt,
     Money Total,
     IReadOnlyList<GameId> GameIds

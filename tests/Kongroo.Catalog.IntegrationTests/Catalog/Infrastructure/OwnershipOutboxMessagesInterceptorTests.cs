@@ -17,7 +17,7 @@ public sealed class OwnershipOutboxMessagesInterceptorTests(PostgreSqlFixture po
         // Arrange
         await using var context = _database.CreateDbContext();
         var ownership = CreateOwnership();
-        context.GameOwnerships.Add(ownership);
+        context.Ownerships.Add(ownership);
 
         // Act
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -36,7 +36,7 @@ public sealed class OwnershipOutboxMessagesInterceptorTests(PostgreSqlFixture po
         await using var context = _database.CreateDbContext();
         var ownership = CreateOwnership();
 
-        context.GameOwnerships.Add(ownership);
+        context.Ownerships.Add(ownership);
 
         // Act
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -53,7 +53,7 @@ public sealed class OwnershipOutboxMessagesInterceptorTests(PostgreSqlFixture po
         var ownership = CreateOwnership();
         var raisedEvent = ownership.DomainEvents.Single().ShouldBeOfType<GameAcquiredDomainEvent>();
 
-        context.GameOwnerships.Add(ownership);
+        context.Ownerships.Add(ownership);
 
         // Act
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -70,6 +70,6 @@ public sealed class OwnershipOutboxMessagesInterceptorTests(PostgreSqlFixture po
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
-    private static GameOwnership CreateOwnership() =>
-        GameOwnership.AcquireFromOrder(OwnerId.Create(), GameId.Create(), OrderId.Create(), DateTimeOffset.UtcNow);
+    private static Ownership CreateOwnership() =>
+        Ownership.AcquireFromOrder(CustomerId.Create(), GameId.Create(), OrderId.Create(), DateTimeOffset.UtcNow);
 }

@@ -10,16 +10,16 @@ public sealed class OrderTests
     public void PlaceCompleted_WithSingleQuote_ShouldCreateCompletedOrder()
     {
         // Arrange
-        var buyerId = BuyerId.From(Guid.CreateVersion7());
+        var customerId = CustomerId.From(Guid.CreateVersion7());
         var quote = CreateQuote();
         var purchasedAt = new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero);
 
         // Act
-        var order = Order.PlaceCompleted(buyerId, [quote], purchasedAt);
+        var order = Order.PlaceCompleted(customerId, [quote], purchasedAt);
 
         // Assert
         order.ShouldSatisfyAllConditions(
-            () => order.BuyerId.ShouldBe(buyerId),
+            () => order.CustomerId.ShouldBe(customerId),
             () => order.PurchasedAt.ShouldBe(purchasedAt),
             () => order.Total.ShouldBe(quote.FinalPrice),
             () => order.Lines.Count.ShouldBe(1)
@@ -30,18 +30,18 @@ public sealed class OrderTests
     public void PlaceCompleted_WithSingleQuote_ShouldRaisePlacedEvent()
     {
         // Arrange
-        var buyerId = BuyerId.From(Guid.CreateVersion7());
+        var customerId = CustomerId.From(Guid.CreateVersion7());
         var quote = CreateQuote();
         var purchasedAt = new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero);
 
         // Act
-        var order = Order.PlaceCompleted(buyerId, [quote], purchasedAt);
+        var order = Order.PlaceCompleted(customerId, [quote], purchasedAt);
 
         // Assert
         var domainEvent = order.DomainEvents.Single().ShouldBeOfType<OrderPlacedDomainEvent>();
         domainEvent.ShouldSatisfyAllConditions(
             () => domainEvent.OrderId.ShouldBe(order.Id),
-            () => domainEvent.BuyerId.ShouldBe(buyerId),
+            () => domainEvent.CustomerId.ShouldBe(customerId),
             () => domainEvent.PurchasedAt.ShouldBe(purchasedAt),
             () => domainEvent.Total.ShouldBe(order.Total)
         );
@@ -52,7 +52,7 @@ public sealed class OrderTests
     public void PlaceCompleted_WithMultipleQuotes_ShouldComputeTotalFromFinalPrices()
     {
         // Arrange
-        var buyerId = BuyerId.From(Guid.CreateVersion7());
+        var customerId = CustomerId.From(Guid.CreateVersion7());
         var firstQuote = CreateQuote(
             gameId: GameId.From(Guid.Parse("11111111-1111-1111-1111-111111111111")),
             title: "Portal",
@@ -68,7 +68,7 @@ public sealed class OrderTests
 
         // Act
         var order = Order.PlaceCompleted(
-            buyerId,
+            customerId,
             [firstQuote, secondQuote],
             new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero)
         );
@@ -81,12 +81,12 @@ public sealed class OrderTests
     public void PlaceCompleted_WithPromotionQuote_ShouldSnapshotListPriceFinalPriceAndPromotion()
     {
         // Arrange
-        var buyerId = BuyerId.From(Guid.CreateVersion7());
+        var customerId = CustomerId.From(Guid.CreateVersion7());
         var promotionId = PromotionId.From(Guid.Parse("33333333-3333-3333-3333-333333333333"));
         var quote = CreateQuote(listPrice: 20m, finalPrice: 15m, appliedPromotionId: promotionId);
 
         // Act
-        var order = Order.PlaceCompleted(buyerId, [quote], new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero));
+        var order = Order.PlaceCompleted(customerId, [quote], new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero));
 
         // Assert
         var line = order.Lines.Single();
@@ -103,11 +103,11 @@ public sealed class OrderTests
     public void PlaceCompleted_WhenQuotesAreEmpty_ShouldThrowArgumentOutOfRangeException()
     {
         // Arrange
-        var buyerId = BuyerId.From(Guid.CreateVersion7());
+        var customerId = CustomerId.From(Guid.CreateVersion7());
 
         // Act
         var exception = Should.Throw<ArgumentOutOfRangeException>(() =>
-            Order.PlaceCompleted(buyerId, [], new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero))
+            Order.PlaceCompleted(customerId, [], new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero))
         );
 
         // Assert
@@ -118,7 +118,7 @@ public sealed class OrderTests
     public void PlaceCompleted_WhenQuotesContainDuplicateGames_ShouldThrowConflictException()
     {
         // Arrange
-        var buyerId = BuyerId.From(Guid.CreateVersion7());
+        var customerId = CustomerId.From(Guid.CreateVersion7());
         var gameId = GameId.From(Guid.Parse("11111111-1111-1111-1111-111111111111"));
         var firstQuote = CreateQuote(gameId: gameId, title: "Portal", listPrice: 20m, finalPrice: 15m);
         var secondQuote = CreateQuote(gameId: gameId, title: "Portal", listPrice: 20m, finalPrice: 20m);
@@ -126,7 +126,7 @@ public sealed class OrderTests
         // Act
         var exception = Should.Throw<ConflictException>(() =>
             Order.PlaceCompleted(
-                buyerId,
+                customerId,
                 [firstQuote, secondQuote],
                 new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero)
             )
@@ -141,7 +141,7 @@ public sealed class OrderTests
     public void PlaceCompleted_WhenQuotesUseDifferentCurrencies_ShouldThrowConflictException()
     {
         // Arrange
-        var buyerId = BuyerId.From(Guid.CreateVersion7());
+        var customerId = CustomerId.From(Guid.CreateVersion7());
         var firstQuote = CreateQuote(
             gameId: GameId.From(Guid.Parse("11111111-1111-1111-1111-111111111111")),
             title: "Portal",
@@ -160,7 +160,7 @@ public sealed class OrderTests
         // Act
         var exception = Should.Throw<ConflictException>(() =>
             Order.PlaceCompleted(
-                buyerId,
+                customerId,
                 [firstQuote, secondQuote],
                 new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero)
             )

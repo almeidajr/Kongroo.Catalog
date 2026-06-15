@@ -6,7 +6,7 @@ using Shouldly;
 
 namespace Kongroo.Catalog.IntegrationTests.Catalog.Application;
 
-public sealed class GetGameOwnershipsQueryHandlerTests(PostgreSqlFixture postgreSqlFixture)
+public sealed class GetOwnershipsQueryHandlerTests(PostgreSqlFixture postgreSqlFixture)
     : IClassFixture<PostgreSqlFixture>,
         IAsyncLifetime
 {
@@ -17,12 +17,12 @@ public sealed class GetGameOwnershipsQueryHandlerTests(PostgreSqlFixture postgre
     {
         // Arrange
         await using var context = _database.CreateDbContext();
-        var handler = new GetGameOwnershipsQueryHandler(context);
-        var ownerId = Guid.NewGuid();
+        var handler = new GetOwnershipsQueryHandler(context);
+        var customerId = Guid.NewGuid();
 
         // Act
         var response = await handler.HandleAsync(
-            new GetGameOwnershipsQuery(ownerId),
+            new GetOwnershipsQuery(customerId),
             TestContext.Current.CancellationToken
         );
 
@@ -31,16 +31,16 @@ public sealed class GetGameOwnershipsQueryHandlerTests(PostgreSqlFixture postgre
     }
 
     [Fact]
-    public async Task HandleAsync_WithCurrentOwnerOwnerships_ShouldReturnOnlyCurrentOwnerOwnershipsOrderedByMostRecentFirst()
+    public async Task HandleAsync_WithCurrentCustomerOwnerships_ShouldReturnOnlyCurrentCustomerOwnershipsOrderedByMostRecentFirst()
     {
         // Arrange
         await using var context = _database.CreateDbContext();
-        var ownerId = Guid.NewGuid();
-        var otherOwnerId = Guid.NewGuid();
+        var customerId = Guid.NewGuid();
+        var otherCustomerId = Guid.NewGuid();
 
         var olderOwnership = await AcquireOwnershipAsync(
             context,
-            ownerId,
+            customerId,
             Guid.NewGuid(),
             Guid.NewGuid(),
             new DateTimeOffset(2026, 4, 1, 10, 0, 0, TimeSpan.Zero),
@@ -48,7 +48,7 @@ public sealed class GetGameOwnershipsQueryHandlerTests(PostgreSqlFixture postgre
         );
         await AcquireOwnershipAsync(
             context,
-            otherOwnerId,
+            otherCustomerId,
             Guid.NewGuid(),
             Guid.NewGuid(),
             new DateTimeOffset(2026, 4, 1, 11, 0, 0, TimeSpan.Zero),
@@ -56,50 +56,50 @@ public sealed class GetGameOwnershipsQueryHandlerTests(PostgreSqlFixture postgre
         );
         var newerOwnership = await AcquireOwnershipAsync(
             context,
-            ownerId,
+            customerId,
             Guid.NewGuid(),
             Guid.NewGuid(),
             new DateTimeOffset(2026, 4, 1, 12, 0, 0, TimeSpan.Zero),
             TestContext.Current.CancellationToken
         );
-        var handler = new GetGameOwnershipsQueryHandler(context);
+        var handler = new GetOwnershipsQueryHandler(context);
 
         // Act
         var response = await handler.HandleAsync(
-            new GetGameOwnershipsQuery(ownerId),
+            new GetOwnershipsQuery(customerId),
             TestContext.Current.CancellationToken
         );
 
         // Assert
         response.Select(ownership => ownership.Id).ShouldBe([newerOwnership.Id, olderOwnership.Id]);
-        response.All(ownership => ownership.OwnerId == ownerId).ShouldBeTrue();
+        response.All(ownership => ownership.CustomerId == customerId).ShouldBeTrue();
     }
 
     public async ValueTask InitializeAsync() => await _database.ResetAsync(TestContext.Current.CancellationToken);
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
-    private static async Task<GetGameOwnershipResponse> AcquireOwnershipAsync(
+    private static async Task<GetOwnershipResponse> AcquireOwnershipAsync(
         CatalogDbContext context,
-        Guid ownerId,
+        Guid customerId,
         Guid gameId,
         Guid orderId,
         DateTimeOffset acquiredAt,
         CancellationToken cancellationToken
     )
     {
-        var ownership = GameOwnership.AcquireFromOrder(
-            OwnerId.From(ownerId),
+        var ownership = Ownership.AcquireFromOrder(
+            CustomerId.From(customerId),
             GameId.From(gameId),
             OrderId.From(orderId),
             acquiredAt
         );
-        context.GameOwnerships.Add(ownership);
+        context.Ownerships.Add(ownership);
         await context.SaveChangesAsync(cancellationToken);
 
-        return new GetGameOwnershipResponse(
+        return new GetOwnershipResponse(
             ownership.Id.Value,
-            ownership.OwnerId.Value,
+            ownership.CustomerId.Value,
             ownership.GameId.Value,
             ownership.OrderId.Value,
             ownership.AcquiredAt

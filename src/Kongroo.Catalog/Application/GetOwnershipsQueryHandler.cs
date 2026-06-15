@@ -4,20 +4,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Kongroo.Catalog.Application;
 
-public sealed class GetGameOwnershipsQueryHandler(CatalogDbContext context)
+public sealed class GetOwnershipsQueryHandler(CatalogDbContext context)
 {
-    public async Task<IReadOnlyList<GetGameOwnershipResponse>> HandleAsync(
-        GetGameOwnershipsQuery query,
+    public async Task<IReadOnlyList<GetOwnershipResponse>> HandleAsync(
+        GetOwnershipsQuery query,
         CancellationToken cancellationToken
     ) =>
         await context
-            .GameOwnerships.AsNoTracking()
-            .Where(ownership => ownership.OwnerId == OwnerId.From(query.OwnerId))
+            .Ownerships.AsNoTracking()
+            .Where(ownership => ownership.CustomerId == CustomerId.From(query.CustomerId))
             .OrderByDescending(ownership => ownership.AcquiredAt)
             .ThenByDescending(ownership => ownership.Id)
-            .Select(ownership => new GetGameOwnershipResponse(
+            .Select(ownership => new GetOwnershipResponse(
                 ownership.Id.Value,
-                ownership.OwnerId.Value,
+                ownership.CustomerId.Value,
                 ownership.GameId.Value,
                 ownership.OrderId.Value,
                 ownership.AcquiredAt

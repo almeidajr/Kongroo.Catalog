@@ -22,7 +22,7 @@ public sealed class GetOrdersQueryHandlerTests(PostgreSqlFixture postgreSqlFixtu
 
         // Act
         var response = await handler.HandleAsync(
-            new GetOrdersQuery(BuyerId.Create().Value),
+            new GetOrdersQuery(CustomerId.Create().Value),
             TestContext.Current.CancellationToken
         );
 
@@ -31,7 +31,7 @@ public sealed class GetOrdersQueryHandlerTests(PostgreSqlFixture postgreSqlFixtu
     }
 
     [Fact]
-    public async Task HandleAsync_WithCurrentBuyerOrders_ShouldReturnOnlyCurrentBuyerOrdersOrderedByMostRecentFirst()
+    public async Task HandleAsync_WithCurrentCustomerOrders_ShouldReturnOnlyCurrentCustomerOrdersOrderedByMostRecentFirst()
     {
         // Arrange
         await using var context = _database.CreateDbContext();
@@ -48,26 +48,26 @@ public sealed class GetOrdersQueryHandlerTests(PostgreSqlFixture postgreSqlFixtu
             25m,
             TestContext.Current.CancellationToken
         );
-        var buyerId = BuyerId.Create();
-        var otherBuyerId = BuyerId.Create();
+        var customerId = CustomerId.Create();
+        var otherCustomerId = CustomerId.Create();
 
         var olderOrder = await PlaceOrderAsync(
             context,
-            buyerId,
+            customerId,
             [firstGameId],
             new DateTimeOffset(2026, 4, 1, 10, 0, 0, TimeSpan.Zero),
             TestContext.Current.CancellationToken
         );
         await PlaceOrderAsync(
             context,
-            otherBuyerId,
+            otherCustomerId,
             [secondGameId],
             new DateTimeOffset(2026, 4, 1, 11, 0, 0, TimeSpan.Zero),
             TestContext.Current.CancellationToken
         );
         var newerOrder = await PlaceOrderAsync(
             context,
-            buyerId,
+            customerId,
             [thirdGameId],
             new DateTimeOffset(2026, 4, 1, 12, 0, 0, TimeSpan.Zero),
             TestContext.Current.CancellationToken
@@ -76,17 +76,17 @@ public sealed class GetOrdersQueryHandlerTests(PostgreSqlFixture postgreSqlFixtu
 
         // Act
         var response = await handler.HandleAsync(
-            new GetOrdersQuery(buyerId.Value),
+            new GetOrdersQuery(customerId.Value),
             TestContext.Current.CancellationToken
         );
 
         // Assert
         response.Select(order => order.Id).ShouldBe([newerOrder.Id, olderOrder.Id]);
-        response.All(order => order.BuyerId == buyerId.Value).ShouldBeTrue();
+        response.All(order => order.CustomerId == customerId.Value).ShouldBeTrue();
     }
 
     [Fact]
-    public async Task HandleAsync_WithCurrentBuyerOrders_ShouldIncludeFullLineSnapshots()
+    public async Task HandleAsync_WithCurrentCustomerOrders_ShouldIncludeFullLineSnapshots()
     {
         // Arrange
         await using var context = _database.CreateDbContext();
@@ -100,13 +100,13 @@ public sealed class GetOrdersQueryHandlerTests(PostgreSqlFixture postgreSqlFixtu
             purchasedAt.AddDays(1),
             TestContext.Current.CancellationToken
         );
-        var buyerId = BuyerId.Create();
-        await PlaceOrderAsync(context, buyerId, [gameId], purchasedAt, TestContext.Current.CancellationToken);
+        var customerId = CustomerId.Create();
+        await PlaceOrderAsync(context, customerId, [gameId], purchasedAt, TestContext.Current.CancellationToken);
         var handler = new GetOrdersQueryHandler(context);
 
         // Act
         var response = await handler.HandleAsync(
-            new GetOrdersQuery(buyerId.Value),
+            new GetOrdersQuery(customerId.Value),
             TestContext.Current.CancellationToken
         );
 
@@ -174,7 +174,7 @@ public sealed class GetOrdersQueryHandlerTests(PostgreSqlFixture postgreSqlFixtu
 
     private static async Task<GetOrderResponse> PlaceOrderAsync(
         CatalogDbContext context,
-        BuyerId buyerId,
+        CustomerId customerId,
         IReadOnlyList<GameId> gameIds,
         DateTimeOffset purchasedAt,
         CancellationToken cancellationToken
@@ -182,7 +182,7 @@ public sealed class GetOrdersQueryHandlerTests(PostgreSqlFixture postgreSqlFixtu
     {
         var handler = new PlaceOrderCommandHandler(context, new FakeTimeProvider(purchasedAt));
         return await handler.HandleAsync(
-            new PlaceOrderCommand(buyerId.Value, [.. gameIds.Select(gameId => gameId.Value)]),
+            new PlaceOrderCommand(customerId.Value, [.. gameIds.Select(gameId => gameId.Value)]),
             cancellationToken
         );
     }
