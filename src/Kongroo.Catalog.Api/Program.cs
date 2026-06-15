@@ -98,7 +98,6 @@ app.UseAuthorization();
 
 app.MapHealthChecks("health", new HealthCheckOptions { ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse });
 app.MapCatalogEndpoints();
-app.MapLibraryEndpoints();
 
 if (app.Environment.IsDevelopment())
 {

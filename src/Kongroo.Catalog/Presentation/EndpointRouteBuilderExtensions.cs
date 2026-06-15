@@ -15,10 +15,11 @@ public static class EndpointRouteBuilderExtensions
     {
         public RouteGroupBuilder MapCatalogEndpoints()
         {
-            var routeGroup = endpoints.MapGroup("/catalog").WithTags("Catalog");
+            var routeGroup = endpoints.MapGroup("/").WithTags("Catalog");
 
             var gamesGroup = routeGroup.MapGroup("/games");
             var ordersGroup = routeGroup.MapGroup("/orders");
+            var ownershipsGroup = routeGroup.MapGroup("/ownerships");
 
             gamesGroup
                 .MapPost("/", CreateGameAsync)
@@ -116,6 +117,27 @@ public static class EndpointRouteBuilderExtensions
                 .WithName("PlaceOrder")
                 .WithSummary("Place an order")
                 .WithDescription("Purchases one or more games for the authenticated user.");
+
+            ownershipsGroup
+                .MapGet("/", GetOwnershipsAsync)
+                .RequireAuthorization()
+                .ProducesProblem(StatusCodes.Status401Unauthorized)
+                .ProducesProblem(StatusCodes.Status500InternalServerError)
+                .WithName("GetOwnerships")
+                .WithSummary("Get ownerships")
+                .WithDescription(
+                    "Returns the authenticated user's library ownership records ordered by most recent acquisition."
+                );
+
+            ownershipsGroup
+                .MapGet("/{ownershipId:guid}", GetOwnershipAsync)
+                .RequireAuthorization()
+                .ProducesProblem(StatusCodes.Status401Unauthorized)
+                .ProducesProblem(StatusCodes.Status404NotFound)
+                .ProducesProblem(StatusCodes.Status500InternalServerError)
+                .WithName("GetOwnershipById")
+                .WithSummary("Get an ownership")
+                .WithDescription("Returns a single ownership record owned by the authenticated user.");
 
             return routeGroup;
         }
@@ -237,5 +259,30 @@ public static class EndpointRouteBuilderExtensions
         var response = await handler.HandleAsync(command, cancellationToken);
 
         return TypedResults.CreatedAtRoute(response, "GetOrderById", new { orderId = response.Id });
+    }
+
+    private static async Task<Ok<IReadOnlyList<GetOwnershipResponse>>> GetOwnershipsAsync(
+        ClaimsPrincipal user,
+        GetOwnershipsQueryHandler handler,
+        CancellationToken cancellationToken
+    )
+    {
+        var query = new GetOwnershipsQuery(user.GetUserId());
+        var response = await handler.HandleAsync(query, cancellationToken);
+
+        return TypedResults.Ok(response);
+    }
+
+    private static async Task<Ok<GetOwnershipResponse>> GetOwnershipAsync(
+        [Description("Unique identifier of the ownership to retrieve.")] Guid ownershipId,
+        ClaimsPrincipal user,
+        GetOwnershipQueryHandler handler,
+        CancellationToken cancellationToken
+    )
+    {
+        var query = new GetOwnershipQuery(user.GetUserId(), ownershipId);
+        var response = await handler.HandleAsync(query, cancellationToken);
+
+        return TypedResults.Ok(response);
     }
 }

@@ -12,7 +12,7 @@ public sealed class CatalogApiDriver(ApiScenarioContext scenarioContext)
 
     public async Task RequestGamesAsync()
     {
-        var response = await scenarioContext.Client.GetAsync("/catalog/games");
+        var response = await scenarioContext.Client.GetAsync("/games");
         scenarioContext.SetLastResponse(response);
     }
 }
