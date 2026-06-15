@@ -31,15 +31,11 @@ public static class ServiceCollectionExtensions
             services.AddScoped<UpdateGameCommandHandler>();
             services.AddScoped<DeleteGameCommandHandler>();
 
-            services.AddScoped<AcquireGameOwnershipCommandHandler>();
             services.AddScoped<GetGameOwnershipQueryHandler>();
             services.AddScoped<GetGameOwnershipsQueryHandler>();
         }
 
-        private void AddInfrastructure(IConfiguration configuration)
-        {
+        private void AddInfrastructure(IConfiguration configuration) =>
             services.AddOutboxDbContext<CatalogDbContext>(configuration);
-            services.AddOutboxDbContext<LibraryDbContext>(configuration);
-        }
     }
 }

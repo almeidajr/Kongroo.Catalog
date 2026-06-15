@@ -14,10 +14,13 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
 
     public DbSet<Order> Orders => Set<Order>();
 
+    public DbSet<GameOwnership> GameOwnerships => Set<GameOwnership>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new GameConfiguration());
         modelBuilder.ApplyConfiguration(new OrderConfiguration());
+        modelBuilder.ApplyConfiguration(new GameOwnershipConfiguration());
     }
 }

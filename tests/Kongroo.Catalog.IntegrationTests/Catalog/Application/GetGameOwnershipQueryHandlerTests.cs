@@ -5,13 +5,13 @@ using Kongroo.Catalog.Infrastructure;
 using Kongroo.Catalog.IntegrationTests.Fixtures;
 using Shouldly;
 
-namespace Kongroo.Catalog.IntegrationTests.Library.Application;
+namespace Kongroo.Catalog.IntegrationTests.Catalog.Application;
 
 public sealed class GetGameOwnershipQueryHandlerTests(PostgreSqlFixture postgreSqlFixture)
     : IClassFixture<PostgreSqlFixture>,
         IAsyncLifetime
 {
-    private readonly LibraryTestDatabase _database = new(postgreSqlFixture);
+    private readonly CatalogTestDatabase _database = new(postgreSqlFixture);
 
     [Fact]
     public async Task HandleAsync_WithCurrentOwnerOwnership_ShouldReturnOwnership()
@@ -93,7 +93,7 @@ public sealed class GetGameOwnershipQueryHandlerTests(PostgreSqlFixture postgreS
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
     private static async Task<GetGameOwnershipResponse> AcquireOwnershipAsync(
-        LibraryDbContext context,
+        CatalogDbContext context,
         Guid ownerId,
         Guid gameId,
         Guid orderId,
@@ -101,10 +101,21 @@ public sealed class GetGameOwnershipQueryHandlerTests(PostgreSqlFixture postgreS
         CancellationToken cancellationToken
     )
     {
-        var handler = new AcquireGameOwnershipCommandHandler(context);
-        return await handler.HandleAsync(
-            new AcquireGameOwnershipCommand(ownerId, gameId, orderId, acquiredAt),
-            cancellationToken
+        var ownership = GameOwnership.AcquireFromOrder(
+            OwnerId.From(ownerId),
+            GameId.From(gameId),
+            OrderId.From(orderId),
+            acquiredAt
+        );
+        context.GameOwnerships.Add(ownership);
+        await context.SaveChangesAsync(cancellationToken);
+
+        return new GetGameOwnershipResponse(
+            ownership.Id.Value,
+            ownership.OwnerId.Value,
+            ownership.GameId.Value,
+            ownership.OrderId.Value,
+            ownership.AcquiredAt
         );
     }
 }

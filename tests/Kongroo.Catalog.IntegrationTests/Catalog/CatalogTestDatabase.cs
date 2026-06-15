@@ -30,6 +30,7 @@ public sealed class CatalogTestDatabase(PostgreSqlFixture fixture)
                 "{CatalogDbContext.Schema}"."outbox_messages",
                 "{CatalogDbContext.Schema}"."order_lines",
                 "{CatalogDbContext.Schema}"."orders",
+                "{CatalogDbContext.Schema}"."game_ownerships",
                 "{CatalogDbContext.Schema}"."promotions",
                 "{CatalogDbContext.Schema}"."games"
             CASCADE;

@@ -1,7 +1,7 @@
 using Kongroo.Catalog.Domain;
 using Shouldly;
 
-namespace Kongroo.Catalog.UnitTests.Library.Domain;
+namespace Kongroo.Catalog.UnitTests.Catalog.Domain;
 
 public sealed class GameOwnershipTests
 {

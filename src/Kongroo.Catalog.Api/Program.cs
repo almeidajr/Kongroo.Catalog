@@ -55,8 +55,7 @@ builder
     .AddApplicationLifecycleHealthCheck()
     .AddResourceUtilizationHealthCheck()
     .AddNpgSql(_ => builder.Configuration.GetRequiredConnectionString("Database"))
-    .AddDbContextCheck<CatalogDbContext>()
-    .AddDbContextCheck<LibraryDbContext>();
+    .AddDbContextCheck<CatalogDbContext>();
 
 builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

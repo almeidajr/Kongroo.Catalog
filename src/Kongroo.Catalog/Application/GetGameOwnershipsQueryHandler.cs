@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Kongroo.Catalog.Application;
 
-public sealed class GetGameOwnershipsQueryHandler(LibraryDbContext context)
+public sealed class GetGameOwnershipsQueryHandler(CatalogDbContext context)
 {
     public async Task<IReadOnlyList<GetGameOwnershipResponse>> HandleAsync(
         GetGameOwnershipsQuery query,

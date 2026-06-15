@@ -3,13 +3,13 @@ using Kongroo.Catalog.IntegrationTests.Fixtures;
 using Microsoft.EntityFrameworkCore;
 using Shouldly;
 
-namespace Kongroo.Catalog.IntegrationTests.Library.Infrastructure;
+namespace Kongroo.Catalog.IntegrationTests.Catalog.Infrastructure;
 
-public sealed class OutboxMessagesInterceptorTests(PostgreSqlFixture postgreSqlFixture)
+public sealed class OwnershipOutboxMessagesInterceptorTests(PostgreSqlFixture postgreSqlFixture)
     : IClassFixture<PostgreSqlFixture>,
         IAsyncLifetime
 {
-    private readonly LibraryTestDatabase _database = new(postgreSqlFixture);
+    private readonly CatalogTestDatabase _database = new(postgreSqlFixture);
 
     [Fact]
     public async Task SaveChangesAsync_WithRaisedDomainEvents_ShouldPersistOutboxMessage()
