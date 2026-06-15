@@ -55,10 +55,9 @@ public static class SpecsEnvironment
                 "catalog"."outbox_messages",
                 "catalog"."order_lines",
                 "catalog"."orders",
+                "catalog"."ownerships",
                 "catalog"."promotions",
-                "catalog"."games",
-                "library"."outbox_messages",
-                "library"."game_ownerships"
+                "catalog"."games"
             CASCADE;
             """;
 

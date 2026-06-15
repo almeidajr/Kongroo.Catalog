@@ -87,16 +87,16 @@ public sealed class GetOrderQueryHandlerTests(PostgreSqlFixture postgreSqlFixtur
     }
 
     [Fact]
-    public async Task HandleAsync_WhenOrderBelongsToDifferentBuyer_ShouldThrowNotFoundException()
+    public async Task HandleAsync_WhenOrderBelongsToDifferentCustomer_ShouldThrowNotFoundException()
     {
         // Arrange
         await using var context = _database.CreateDbContext();
         var gameId = await CreatePublishedGameAsync(context, "Portal", 20m, TestContext.Current.CancellationToken);
-        var ownerId = CustomerId.Create();
+        var customerId = CustomerId.Create();
         var otherCustomerId = CustomerId.Create();
         var order = await PlaceOrderAsync(
             context,
-            ownerId,
+            customerId,
             [gameId],
             new DateTimeOffset(2026, 4, 1, 12, 0, 0, TimeSpan.Zero),
             TestContext.Current.CancellationToken
