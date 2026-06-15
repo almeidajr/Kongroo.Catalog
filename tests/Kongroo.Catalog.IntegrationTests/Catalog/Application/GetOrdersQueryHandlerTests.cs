@@ -83,6 +83,7 @@ public sealed class GetOrdersQueryHandlerTests(PostgreSqlFixture postgreSqlFixtu
         // Assert
         response.Select(order => order.Id).ShouldBe([newerOrder.Id, olderOrder.Id]);
         response.All(order => order.CustomerId == customerId.Value).ShouldBeTrue();
+        response.ShouldAllBe(order => order.Status == OrderStatus.Pending);
     }
 
     [Fact]

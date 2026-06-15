@@ -52,7 +52,8 @@ public sealed class GetOrderQueryHandlerTests(PostgreSqlFixture postgreSqlFixtur
             () => response.PurchasedAt.ShouldBe(purchasedAt),
             () => response.TotalAmount.ShouldBe(10m),
             () => response.Currency.ShouldBe(Currency.Usd),
-            () => response.Lines.Count.ShouldBe(1)
+            () => response.Lines.Count.ShouldBe(1),
+            () => response.Status.ShouldBe(OrderStatus.Pending)
         );
 
         var line = response.Lines.Single();
