@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kongroo.Catalog.Infrastructure.Migrations
 {
     [DbContext(typeof(CatalogDbContext))]
-    [Migration("20260615230050_InitialCatalog")]
+    [Migration("20260615231501_InitialCatalog")]
     partial class InitialCatalog
     {
         /// <inheritdoc />
@@ -128,6 +128,12 @@ namespace Kongroo.Catalog.Infrastructure.Migrations
                         .HasPrecision(0)
                         .HasColumnType("timestamp(0) with time zone")
                         .HasColumnName("purchased_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
 
                     b.ComplexProperty(typeof(Dictionary<string, object>), "Total", "Kongroo.Catalog.Domain.Order.Total#Money", b1 =>
                         {

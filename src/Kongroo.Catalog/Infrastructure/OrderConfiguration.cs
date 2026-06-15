@@ -12,6 +12,7 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(order => order.Id).HasConversion(id => id.Value, value => OrderId.From(value));
 
         builder.Property(order => order.CustomerId).HasConversion(id => id.Value, value => CustomerId.From(value));
+        builder.Property(order => order.Status).HasConversion<string>().HasMaxLength(16);
         builder.Property(order => order.PurchasedAt).HasPrecision(0);
 
         builder.ComplexProperty(

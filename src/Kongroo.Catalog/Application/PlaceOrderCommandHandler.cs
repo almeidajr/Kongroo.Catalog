@@ -28,7 +28,7 @@ public sealed class PlaceOrderCommandHandler(CatalogDbContext context, TimeProvi
         var customerId = CustomerId.From(command.CustomerId);
         var ownedGameIds = await context
             .Orders.AsNoTracking()
-            .Where(order => order.CustomerId == customerId)
+            .Where(order => order.CustomerId == customerId && order.Status != OrderStatus.Rejected)
             .SelectMany(order => order.Lines)
             .Select(line => line.GameId)
             .ToListAsync(cancellationToken);
@@ -36,13 +36,13 @@ public sealed class PlaceOrderCommandHandler(CatalogDbContext context, TimeProvi
         var alreadyOwnedGameId = requestedGameIds.FirstOrDefault(ownedGameIds.Contains);
         if (alreadyOwnedGameId is not null)
         {
-            throw new ConflictException(nameof(Order), $"buyer already owns game '{alreadyOwnedGameId.Value}'");
+            throw new ConflictException(nameof(Order), $"customer already ordered game '{alreadyOwnedGameId.Value}'");
         }
 
         var purchasedAt = timeProvider.GetUtcNow();
 
         var quotes = games.Values.Select(game => game.QuotePurchase(purchasedAt)).ToList();
-        var order = Order.PlaceCompleted(customerId, quotes, purchasedAt);
+        var order = Order.Place(customerId, quotes, purchasedAt);
 
         context.Orders.Add(order);
         await context.SaveChangesAsync(cancellationToken);
@@ -50,6 +50,7 @@ public sealed class PlaceOrderCommandHandler(CatalogDbContext context, TimeProvi
         return new GetOrderResponse(
             order.Id.Value,
             order.CustomerId.Value,
+            order.Status,
             order.PurchasedAt,
             order.Total.Amount,
             order.Total.Currency,

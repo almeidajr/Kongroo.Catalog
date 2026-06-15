@@ -126,6 +126,12 @@ namespace Kongroo.Catalog.Infrastructure.Migrations
                         .HasColumnType("timestamp(0) with time zone")
                         .HasColumnName("purchased_at");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
                     b.ComplexProperty(typeof(Dictionary<string, object>), "Total", "Kongroo.Catalog.Domain.Order.Total#Money", b1 =>
                         {
                             b1.IsRequired();

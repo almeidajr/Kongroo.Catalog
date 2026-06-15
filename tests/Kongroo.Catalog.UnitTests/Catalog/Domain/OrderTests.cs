@@ -7,7 +7,7 @@ namespace Kongroo.Catalog.UnitTests.Catalog.Domain;
 public sealed class OrderTests
 {
     [Fact]
-    public void PlaceCompleted_WithSingleQuote_ShouldCreateCompletedOrder()
+    public void Place_WithSingleQuote_ShouldCreatePendingOrder()
     {
         // Arrange
         var customerId = CustomerId.From(Guid.CreateVersion7());
@@ -15,19 +15,20 @@ public sealed class OrderTests
         var purchasedAt = new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero);
 
         // Act
-        var order = Order.PlaceCompleted(customerId, [quote], purchasedAt);
+        var order = Order.Place(customerId, [quote], purchasedAt);
 
         // Assert
         order.ShouldSatisfyAllConditions(
             () => order.CustomerId.ShouldBe(customerId),
             () => order.PurchasedAt.ShouldBe(purchasedAt),
             () => order.Total.ShouldBe(quote.FinalPrice),
-            () => order.Lines.Count.ShouldBe(1)
+            () => order.Lines.Count.ShouldBe(1),
+            () => order.Status.ShouldBe(OrderStatus.Pending)
         );
     }
 
     [Fact]
-    public void PlaceCompleted_WithSingleQuote_ShouldRaisePlacedEvent()
+    public void Place_WithSingleQuote_ShouldRaisePlacedEvent()
     {
         // Arrange
         var customerId = CustomerId.From(Guid.CreateVersion7());
@@ -35,7 +36,7 @@ public sealed class OrderTests
         var purchasedAt = new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero);
 
         // Act
-        var order = Order.PlaceCompleted(customerId, [quote], purchasedAt);
+        var order = Order.Place(customerId, [quote], purchasedAt);
 
         // Assert
         var domainEvent = order.DomainEvents.Single().ShouldBeOfType<OrderPlacedDomainEvent>();
@@ -49,7 +50,7 @@ public sealed class OrderTests
     }
 
     [Fact]
-    public void PlaceCompleted_WithMultipleQuotes_ShouldComputeTotalFromFinalPrices()
+    public void Place_WithMultipleQuotes_ShouldComputeTotalFromFinalPrices()
     {
         // Arrange
         var customerId = CustomerId.From(Guid.CreateVersion7());
@@ -67,7 +68,7 @@ public sealed class OrderTests
         );
 
         // Act
-        var order = Order.PlaceCompleted(
+        var order = Order.Place(
             customerId,
             [firstQuote, secondQuote],
             new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero)
@@ -78,7 +79,7 @@ public sealed class OrderTests
     }
 
     [Fact]
-    public void PlaceCompleted_WithPromotionQuote_ShouldSnapshotListPriceFinalPriceAndPromotion()
+    public void Place_WithPromotionQuote_ShouldSnapshotListPriceFinalPriceAndPromotion()
     {
         // Arrange
         var customerId = CustomerId.From(Guid.CreateVersion7());
@@ -86,7 +87,7 @@ public sealed class OrderTests
         var quote = CreateQuote(listPrice: 20m, finalPrice: 15m, appliedPromotionId: promotionId);
 
         // Act
-        var order = Order.PlaceCompleted(customerId, [quote], new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero));
+        var order = Order.Place(customerId, [quote], new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero));
 
         // Assert
         var line = order.Lines.Single();
@@ -100,14 +101,14 @@ public sealed class OrderTests
     }
 
     [Fact]
-    public void PlaceCompleted_WhenQuotesAreEmpty_ShouldThrowArgumentOutOfRangeException()
+    public void Place_WhenQuotesAreEmpty_ShouldThrowArgumentOutOfRangeException()
     {
         // Arrange
         var customerId = CustomerId.From(Guid.CreateVersion7());
 
         // Act
         var exception = Should.Throw<ArgumentOutOfRangeException>(() =>
-            Order.PlaceCompleted(customerId, [], new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero))
+            Order.Place(customerId, [], new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero))
         );
 
         // Assert
@@ -115,7 +116,7 @@ public sealed class OrderTests
     }
 
     [Fact]
-    public void PlaceCompleted_WhenQuotesContainDuplicateGames_ShouldThrowConflictException()
+    public void Place_WhenQuotesContainDuplicateGames_ShouldThrowConflictException()
     {
         // Arrange
         var customerId = CustomerId.From(Guid.CreateVersion7());
@@ -125,11 +126,7 @@ public sealed class OrderTests
 
         // Act
         var exception = Should.Throw<ConflictException>(() =>
-            Order.PlaceCompleted(
-                customerId,
-                [firstQuote, secondQuote],
-                new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero)
-            )
+            Order.Place(customerId, [firstQuote, secondQuote], new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero))
         );
 
         // Assert
@@ -138,7 +135,7 @@ public sealed class OrderTests
     }
 
     [Fact]
-    public void PlaceCompleted_WhenQuotesUseDifferentCurrencies_ShouldThrowConflictException()
+    public void Place_WhenQuotesUseDifferentCurrencies_ShouldThrowConflictException()
     {
         // Arrange
         var customerId = CustomerId.From(Guid.CreateVersion7());
@@ -159,16 +156,57 @@ public sealed class OrderTests
 
         // Act
         var exception = Should.Throw<ConflictException>(() =>
-            Order.PlaceCompleted(
-                customerId,
-                [firstQuote, secondQuote],
-                new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero)
-            )
+            Order.Place(customerId, [firstQuote, secondQuote], new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero))
         );
 
         // Assert
         exception.ResourceName.ShouldBe(nameof(Order));
         exception.Reason.ShouldBe("all order lines must use the same currency");
+    }
+
+    [Fact]
+    public void MarkPaid_WhenPending_ShouldTransitionToPaid()
+    {
+        var order = Order.Place(
+            CustomerId.From(Guid.CreateVersion7()),
+            [CreateQuote()],
+            new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero)
+        );
+
+        order.MarkPaid(new DateTimeOffset(2026, 3, 31, 12, 0, 0, TimeSpan.Zero));
+
+        order.Status.ShouldBe(OrderStatus.Paid);
+    }
+
+    [Fact]
+    public void Reject_WhenPending_ShouldTransitionToRejected()
+    {
+        var order = Order.Place(
+            CustomerId.From(Guid.CreateVersion7()),
+            [CreateQuote()],
+            new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero)
+        );
+
+        order.Reject();
+
+        order.Status.ShouldBe(OrderStatus.Rejected);
+    }
+
+    [Fact]
+    public void MarkPaid_WhenNotPending_ShouldThrowConflictException()
+    {
+        var order = Order.Place(
+            CustomerId.From(Guid.CreateVersion7()),
+            [CreateQuote()],
+            new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero)
+        );
+        order.Reject();
+
+        var exception = Should.Throw<ConflictException>(() =>
+            order.MarkPaid(new DateTimeOffset(2026, 3, 31, 12, 0, 0, TimeSpan.Zero))
+        );
+
+        exception.ResourceName.ShouldBe(nameof(Order));
     }
 
     private static GamePurchaseQuote CreateQuote(

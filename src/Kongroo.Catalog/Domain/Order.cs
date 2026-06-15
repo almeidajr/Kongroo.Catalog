@@ -15,9 +15,11 @@ public sealed class Order : Entity<OrderId>
 
     public Money Total { get; private set; } = null!;
 
+    public OrderStatus Status { get; private set; }
+
     public IReadOnlyCollection<OrderLine> Lines => _lines.AsReadOnly();
 
-    public static Order PlaceCompleted(
+    public static Order Place(
         CustomerId customerId,
         IReadOnlyList<GamePurchaseQuote> quotes,
         DateTimeOffset purchasedAt
@@ -44,6 +46,7 @@ public sealed class Order : Entity<OrderId>
             CustomerId = customerId,
             PurchasedAt = purchasedAt,
             Total = Money.From(quotes.Sum(quote => quote.FinalPrice.Amount), currency),
+            Status = OrderStatus.Pending,
         };
 
         order._lines.AddRange(quotes.Select(OrderLine.FromQuote));
@@ -59,6 +62,27 @@ public sealed class Order : Entity<OrderId>
         );
 
         return order;
+    }
+
+    public void MarkPaid(DateTimeOffset processedAt)
+    {
+        EnsurePending();
+        Status = OrderStatus.Paid;
+        PurchasedAt = processedAt;
+    }
+
+    public void Reject()
+    {
+        EnsurePending();
+        Status = OrderStatus.Rejected;
+    }
+
+    private void EnsurePending()
+    {
+        if (Status != OrderStatus.Pending)
+        {
+            throw new ConflictException(nameof(Order), $"order is already '{Status}'");
+        }
     }
 
     private static void ThrowIfContainsDuplicateGames(IReadOnlyList<GamePurchaseQuote> quotes)

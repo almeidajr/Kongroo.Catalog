@@ -17,6 +17,7 @@ public sealed class GetOrderQueryHandler(CatalogDbContext context)
                 .Select(order => new GetOrderResponse(
                     order.Id.Value,
                     order.CustomerId.Value,
+                    order.Status,
                     order.PurchasedAt,
                     order.Total.Amount,
                     order.Total.Currency,

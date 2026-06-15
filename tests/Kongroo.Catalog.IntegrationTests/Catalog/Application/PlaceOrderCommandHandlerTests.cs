@@ -17,7 +17,7 @@ public sealed class PlaceOrderCommandHandlerTests(PostgreSqlFixture postgreSqlFi
     private readonly CatalogTestDatabase _database = new(postgreSqlFixture);
 
     [Fact]
-    public async Task HandleAsync_WithPurchasableGames_ShouldReturnCompletedOrderResponse()
+    public async Task HandleAsync_WithPurchasableGames_ShouldReturnPendingOrderResponse()
     {
         // Arrange
         await using var context = _database.CreateDbContext();
@@ -54,6 +54,7 @@ public sealed class PlaceOrderCommandHandlerTests(PostgreSqlFixture postgreSqlFi
         response.ShouldSatisfyAllConditions(
             () => response.Id.ShouldNotBe(Guid.Empty),
             () => response.CustomerId.ShouldBe(customerId.Value),
+            () => response.Status.ShouldBe(OrderStatus.Pending),
             () => response.PurchasedAt.ShouldBe(PurchasedAt),
             () => response.TotalAmount.ShouldBe(25m),
             () => response.Currency.ShouldBe(Currency.Usd),
@@ -82,7 +83,7 @@ public sealed class PlaceOrderCommandHandlerTests(PostgreSqlFixture postgreSqlFi
     }
 
     [Fact]
-    public async Task HandleAsync_WithPurchasableGames_ShouldPersistCompletedOrder()
+    public async Task HandleAsync_WithPurchasableGames_ShouldPersistPendingOrder()
     {
         // Arrange
         await using var context = _database.CreateDbContext();
@@ -123,6 +124,7 @@ public sealed class PlaceOrderCommandHandlerTests(PostgreSqlFixture postgreSqlFi
 
         savedOrder.ShouldSatisfyAllConditions(
             () => savedOrder.CustomerId.ShouldBe(customerId),
+            () => savedOrder.Status.ShouldBe(OrderStatus.Pending),
             () => savedOrder.PurchasedAt.ShouldBe(PurchasedAt),
             () => savedOrder.Total.Amount.ShouldBe(25m),
             () => savedOrder.Total.Currency.ShouldBe(Currency.Usd),
@@ -228,13 +230,13 @@ public sealed class PlaceOrderCommandHandlerTests(PostgreSqlFixture postgreSqlFi
     }
 
     [Fact]
-    public async Task HandleAsync_WhenBuyerAlreadyOwnsRequestedGame_ShouldThrowConflictException()
+    public async Task HandleAsync_WhenCustomerAlreadyOrderedRequestedGame_ShouldThrowConflictException()
     {
         // Arrange
         await using var context = _database.CreateDbContext();
         var gameId = await CreatePublishedGameAsync(context, "Portal", 20m, TestContext.Current.CancellationToken);
         var customerId = CustomerId.Create();
-        await CreateCompletedOrderAsync(context, customerId, [gameId], TestContext.Current.CancellationToken);
+        await CreateOrderAsync(context, customerId, [gameId], TestContext.Current.CancellationToken);
         var handler = new PlaceOrderCommandHandler(context, new FakeTimeProvider(PurchasedAt));
 
         // Act
@@ -247,7 +249,7 @@ public sealed class PlaceOrderCommandHandlerTests(PostgreSqlFixture postgreSqlFi
 
         // Assert
         exception.ResourceName.ShouldBe(nameof(Order));
-        exception.Reason.ShouldBe($"buyer already owns game '{gameId.Value}'");
+        exception.Reason.ShouldBe($"customer already ordered game '{gameId.Value}'");
     }
 
     [Fact]
@@ -284,7 +286,7 @@ public sealed class PlaceOrderCommandHandlerTests(PostgreSqlFixture postgreSqlFi
             TestContext.Current.CancellationToken
         );
         var customerId = CustomerId.Create();
-        await CreateCompletedOrderAsync(context, customerId, [ownedGameId], TestContext.Current.CancellationToken);
+        await CreateOrderAsync(context, customerId, [ownedGameId], TestContext.Current.CancellationToken);
         var handler = new PlaceOrderCommandHandler(context, new FakeTimeProvider(PurchasedAt));
 
         // Act
@@ -360,7 +362,7 @@ public sealed class PlaceOrderCommandHandlerTests(PostgreSqlFixture postgreSqlFi
         );
     }
 
-    private static async Task CreateCompletedOrderAsync(
+    private static async Task CreateOrderAsync(
         CatalogDbContext context,
         CustomerId customerId,
         IReadOnlyList<GameId> gameIds,

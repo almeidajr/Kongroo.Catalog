@@ -57,6 +57,7 @@ namespace Kongroo.Catalog.Infrastructure.Migrations
                         precision: 0,
                         nullable: false
                     ),
+                    status = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false),
                     total_amount = table.Column<decimal>(
                         type: "numeric(18,2)",
                         precision: 18,
