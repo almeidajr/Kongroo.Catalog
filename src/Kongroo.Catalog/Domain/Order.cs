@@ -68,7 +68,7 @@ public sealed class Order : Entity<OrderId>
     {
         EnsurePending();
         Status = OrderStatus.Paid;
-        PurchasedAt = processedAt;
+        PurchasedAt = processedAt; // advance to the confirmed payment instant
     }
 
     public void Reject()

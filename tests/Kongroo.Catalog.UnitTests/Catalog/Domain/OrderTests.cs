@@ -172,10 +172,14 @@ public sealed class OrderTests
             [CreateQuote()],
             new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero)
         );
+        var processedAt = new DateTimeOffset(2026, 3, 31, 12, 0, 0, TimeSpan.Zero);
 
-        order.MarkPaid(new DateTimeOffset(2026, 3, 31, 12, 0, 0, TimeSpan.Zero));
+        order.MarkPaid(processedAt);
 
-        order.Status.ShouldBe(OrderStatus.Paid);
+        order.ShouldSatisfyAllConditions(
+            () => order.Status.ShouldBe(OrderStatus.Paid),
+            () => order.PurchasedAt.ShouldBe(processedAt)
+        );
     }
 
     [Fact]
@@ -205,6 +209,38 @@ public sealed class OrderTests
         var exception = Should.Throw<ConflictException>(() =>
             order.MarkPaid(new DateTimeOffset(2026, 3, 31, 12, 0, 0, TimeSpan.Zero))
         );
+
+        exception.ResourceName.ShouldBe(nameof(Order));
+    }
+
+    [Fact]
+    public void MarkPaid_WhenAlreadyPaid_ShouldThrowConflictException()
+    {
+        var order = Order.Place(
+            CustomerId.From(Guid.CreateVersion7()),
+            [CreateQuote()],
+            new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero)
+        );
+        order.MarkPaid(new DateTimeOffset(2026, 3, 31, 12, 0, 0, TimeSpan.Zero));
+
+        var exception = Should.Throw<ConflictException>(() =>
+            order.MarkPaid(new DateTimeOffset(2026, 4, 1, 12, 0, 0, TimeSpan.Zero))
+        );
+
+        exception.ResourceName.ShouldBe(nameof(Order));
+    }
+
+    [Fact]
+    public void Reject_WhenNotPending_ShouldThrowConflictException()
+    {
+        var order = Order.Place(
+            CustomerId.From(Guid.CreateVersion7()),
+            [CreateQuote()],
+            new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero)
+        );
+        order.MarkPaid(new DateTimeOffset(2026, 3, 31, 12, 0, 0, TimeSpan.Zero));
+
+        var exception = Should.Throw<ConflictException>(order.Reject);
 
         exception.ResourceName.ShouldBe(nameof(Order));
     }
