@@ -31,6 +31,8 @@ public static class ServiceCollectionExtensions
             services.AddScoped<UpdateGameCommandHandler>();
             services.AddScoped<DeleteGameCommandHandler>();
 
+            services.AddScoped<ApplyPaymentResultCommandHandler>();
+
             services.AddScoped<GetOwnershipQueryHandler>();
             services.AddScoped<GetOwnershipsQueryHandler>();
         }
