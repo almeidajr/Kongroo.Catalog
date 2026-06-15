@@ -16,7 +16,6 @@ public static class ServiceCollectionExtensions
         {
             services.AddSingleton(TimeProvider.System);
             services.AddSingleton<OutboxMessagesInterceptor>();
-            services.AddScoped<IEventBus, InProcessEventBus>();
 
             services
                 .AddOptions<OutboxProcessingOptions>()

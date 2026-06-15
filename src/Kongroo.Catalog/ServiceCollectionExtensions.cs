@@ -1,6 +1,4 @@
 using Kongroo.BuildingBlocks;
-using Kongroo.BuildingBlocks.Application;
-using Kongroo.BuildingBlocks.Contracts;
 using Kongroo.Catalog.Application;
 using Kongroo.Catalog.Infrastructure;
 using Microsoft.Extensions.Configuration;
@@ -32,15 +30,10 @@ public static class ServiceCollectionExtensions
             services.AddScoped<PlaceOrderCommandHandler>();
             services.AddScoped<UpdateGameCommandHandler>();
             services.AddScoped<DeleteGameCommandHandler>();
-            services.AddScoped<IDomainEventHandler, OrderPlacedDomainEventHandler>();
 
             services.AddScoped<AcquireGameOwnershipCommandHandler>();
             services.AddScoped<GetGameOwnershipQueryHandler>();
             services.AddScoped<GetGameOwnershipsQueryHandler>();
-            services.AddScoped<
-                IIntegrationEventHandler<OrderCompletedIntegrationEvent>,
-                OrderCompletedIntegrationEventHandler
-            >();
         }
 
         private void AddInfrastructure(IConfiguration configuration)
