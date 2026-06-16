@@ -49,6 +49,15 @@
           "Testcontainers": "4.12.0"
         }
       },
+      "Testcontainers.RabbitMq": {
+        "type": "Direct",
+        "requested": "[4.12.0, )",
+        "resolved": "4.12.0",
+        "contentHash": "wsFsFmpwXRQVkaK9s2sNk1g0gcl9p03xFZ0lirSQ6J9pjuEBUPA8wjnTmMJ/tzwC9N/TFT3u62OOMGhlU1eItg==",
+        "dependencies": {
+          "Testcontainers": "4.12.0"
+        }
+      },
       "Testcontainers.XunitV3": {
         "type": "Direct",
         "requested": "[4.12.0, )",

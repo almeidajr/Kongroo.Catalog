@@ -2,6 +2,7 @@ using Kongroo.BuildingBlocks;
 using Kongroo.BuildingBlocks.Application;
 using Kongroo.Catalog.Application;
 using Kongroo.Catalog.Infrastructure;
+using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -40,7 +41,21 @@ public static class ServiceCollectionExtensions
             services.AddScoped<GetOwnershipsQueryHandler>();
         }
 
-        private void AddInfrastructure(IConfiguration configuration) =>
+        private void AddInfrastructure(IConfiguration configuration)
+        {
             services.AddOutboxDbContext<CatalogDbContext>(configuration);
+
+            services
+                .AddOptions<RabbitMqTransportOptions>()
+                .Bind(configuration.GetRequiredSection("RabbitMq"))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+            services.AddMassTransit(busRegistration =>
+            {
+                busRegistration.SetKebabCaseEndpointNameFormatter();
+
+                busRegistration.UsingRabbitMq((context, busFactory) => busFactory.ConfigureEndpoints(context));
+            });
+        }
     }
 }
