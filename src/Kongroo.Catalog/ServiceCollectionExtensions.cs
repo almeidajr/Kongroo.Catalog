@@ -1,4 +1,5 @@
 using Kongroo.BuildingBlocks;
+using Kongroo.BuildingBlocks.Application;
 using Kongroo.Catalog.Application;
 using Kongroo.Catalog.Infrastructure;
 using Microsoft.Extensions.Configuration;
@@ -32,6 +33,8 @@ public static class ServiceCollectionExtensions
             services.AddScoped<DeleteGameCommandHandler>();
 
             services.AddScoped<ApplyPaymentResultCommandHandler>();
+
+            services.AddScoped<IDomainEventHandler, OrderPlacedDomainEventHandler>();
 
             services.AddScoped<GetOwnershipQueryHandler>();
             services.AddScoped<GetOwnershipsQueryHandler>();
