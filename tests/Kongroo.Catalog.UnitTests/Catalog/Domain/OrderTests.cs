@@ -6,6 +6,9 @@ namespace Kongroo.Catalog.UnitTests.Catalog.Domain;
 
 public sealed class OrderTests
 {
+    private const string Email = "ada@example.com";
+    private const string CustomerName = "Ada Lovelace";
+
     [Fact]
     public void Place_WithSingleQuote_ShouldCreatePendingOrder()
     {
@@ -15,7 +18,7 @@ public sealed class OrderTests
         var purchasedAt = new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero);
 
         // Act
-        var order = Order.Place(customerId, [quote], purchasedAt);
+        var order = Order.Place(customerId, Email, CustomerName, [quote], purchasedAt);
 
         // Assert
         order.ShouldSatisfyAllConditions(
@@ -36,13 +39,15 @@ public sealed class OrderTests
         var purchasedAt = new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero);
 
         // Act
-        var order = Order.Place(customerId, [quote], purchasedAt);
+        var order = Order.Place(customerId, Email, CustomerName, [quote], purchasedAt);
 
         // Assert
         var domainEvent = order.DomainEvents.Single().ShouldBeOfType<OrderPlacedDomainEvent>();
         domainEvent.ShouldSatisfyAllConditions(
             () => domainEvent.OrderId.ShouldBe(order.Id),
             () => domainEvent.CustomerId.ShouldBe(customerId),
+            () => domainEvent.Email.ShouldBe(Email),
+            () => domainEvent.CustomerName.ShouldBe(CustomerName),
             () => domainEvent.PurchasedAt.ShouldBe(purchasedAt),
             () => domainEvent.Total.ShouldBe(order.Total)
         );
@@ -70,6 +75,8 @@ public sealed class OrderTests
         // Act
         var order = Order.Place(
             customerId,
+            Email,
+            CustomerName,
             [firstQuote, secondQuote],
             new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero)
         );
@@ -87,7 +94,13 @@ public sealed class OrderTests
         var quote = CreateQuote(listPrice: 20m, finalPrice: 15m, appliedPromotionId: promotionId);
 
         // Act
-        var order = Order.Place(customerId, [quote], new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero));
+        var order = Order.Place(
+            customerId,
+            Email,
+            CustomerName,
+            [quote],
+            new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero)
+        );
 
         // Assert
         var line = order.Lines.Single();
@@ -108,11 +121,43 @@ public sealed class OrderTests
 
         // Act
         var exception = Should.Throw<ArgumentOutOfRangeException>(() =>
-            Order.Place(customerId, [], new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero))
+            Order.Place(customerId, Email, CustomerName, [], new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero))
         );
 
         // Assert
         exception.ParamName.ShouldBe("quotes");
+    }
+
+    [Fact]
+    public void Place_WhenEmailIsBlank_ShouldThrowArgumentException()
+    {
+        var customerId = CustomerId.From(Guid.CreateVersion7());
+        var quote = CreateQuote();
+
+        var exception = Should.Throw<ArgumentException>(() =>
+            Order.Place(
+                customerId,
+                "  ",
+                CustomerName,
+                [quote],
+                new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero)
+            )
+        );
+
+        exception.ParamName.ShouldBe("email");
+    }
+
+    [Fact]
+    public void Place_WhenCustomerNameIsBlank_ShouldThrowArgumentException()
+    {
+        var customerId = CustomerId.From(Guid.CreateVersion7());
+        var quote = CreateQuote();
+
+        var exception = Should.Throw<ArgumentException>(() =>
+            Order.Place(customerId, Email, "  ", [quote], new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero))
+        );
+
+        exception.ParamName.ShouldBe("customerName");
     }
 
     [Fact]
@@ -126,7 +171,13 @@ public sealed class OrderTests
 
         // Act
         var exception = Should.Throw<ConflictException>(() =>
-            Order.Place(customerId, [firstQuote, secondQuote], new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero))
+            Order.Place(
+                customerId,
+                Email,
+                CustomerName,
+                [firstQuote, secondQuote],
+                new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero)
+            )
         );
 
         // Assert
@@ -156,7 +207,13 @@ public sealed class OrderTests
 
         // Act
         var exception = Should.Throw<ConflictException>(() =>
-            Order.Place(customerId, [firstQuote, secondQuote], new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero))
+            Order.Place(
+                customerId,
+                Email,
+                CustomerName,
+                [firstQuote, secondQuote],
+                new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero)
+            )
         );
 
         // Assert
@@ -169,6 +226,8 @@ public sealed class OrderTests
     {
         var order = Order.Place(
             CustomerId.From(Guid.CreateVersion7()),
+            Email,
+            CustomerName,
             [CreateQuote()],
             new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero)
         );
@@ -187,6 +246,8 @@ public sealed class OrderTests
     {
         var order = Order.Place(
             CustomerId.From(Guid.CreateVersion7()),
+            Email,
+            CustomerName,
             [CreateQuote()],
             new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero)
         );
@@ -201,6 +262,8 @@ public sealed class OrderTests
     {
         var order = Order.Place(
             CustomerId.From(Guid.CreateVersion7()),
+            Email,
+            CustomerName,
             [CreateQuote()],
             new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero)
         );
@@ -218,6 +281,8 @@ public sealed class OrderTests
     {
         var order = Order.Place(
             CustomerId.From(Guid.CreateVersion7()),
+            Email,
+            CustomerName,
             [CreateQuote()],
             new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero)
         );
@@ -235,6 +300,8 @@ public sealed class OrderTests
     {
         var order = Order.Place(
             CustomerId.From(Guid.CreateVersion7()),
+            Email,
+            CustomerName,
             [CreateQuote()],
             new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero)
         );

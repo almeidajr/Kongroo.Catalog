@@ -13,6 +13,8 @@ public sealed class OrderPlacedDomainEventHandler(IPublishEndpoint publishEndpoi
             new OrderPlacedIntegrationEvent(
                 domainEvent.OrderId.Value,
                 domainEvent.CustomerId.Value,
+                domainEvent.Email,
+                domainEvent.CustomerName,
                 domainEvent.Total.Amount,
                 CurrencyMappings.ToCode(domainEvent.Total.Currency)
             ),

@@ -42,7 +42,7 @@ public sealed class PlaceOrderCommandHandler(CatalogDbContext context, TimeProvi
         var purchasedAt = timeProvider.GetUtcNow();
 
         var quotes = games.Values.Select(game => game.QuotePurchase(purchasedAt)).ToList();
-        var order = Order.Place(customerId, quotes, purchasedAt);
+        var order = Order.Place(customerId, command.Email, command.CustomerName, quotes, purchasedAt);
 
         context.Orders.Add(order);
         await context.SaveChangesAsync(cancellationToken);

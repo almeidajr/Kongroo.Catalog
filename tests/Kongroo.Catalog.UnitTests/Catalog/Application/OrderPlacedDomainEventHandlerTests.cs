@@ -21,6 +21,8 @@ public sealed class OrderPlacedDomainEventHandlerTests
         var domainEvent = new OrderPlacedDomainEvent(
             orderId,
             customerId,
+            "ada@example.com",
+            "Ada Lovelace",
             new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero),
             total,
             [GameId.From(Guid.CreateVersion7())]
@@ -36,6 +38,8 @@ public sealed class OrderPlacedDomainEventHandlerTests
                 Arg.Is<OrderPlacedIntegrationEvent>(integrationEvent =>
                     integrationEvent.OrderId == orderId.Value
                     && integrationEvent.CustomerId == customerId.Value
+                    && integrationEvent.Email == "ada@example.com"
+                    && integrationEvent.CustomerName == "Ada Lovelace"
                     && integrationEvent.Amount == 42.50m
                     && integrationEvent.Currency == "USD"
                 ),

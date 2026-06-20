@@ -15,6 +15,8 @@ public sealed class ApplyPaymentResultCommandHandlerTests(PostgreSqlFixture post
 {
     private static readonly DateTimeOffset PlacedAt = new(2026, 4, 1, 12, 0, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset ProcessedAt = new(2026, 4, 2, 12, 0, 0, TimeSpan.Zero);
+    private const string Email = "ada@example.com";
+    private const string CustomerName = "Ada Lovelace";
     private readonly CatalogTestDatabase _database = new(postgreSqlFixture);
 
     [Fact]
@@ -179,7 +181,7 @@ public sealed class ApplyPaymentResultCommandHandlerTests(PostgreSqlFixture post
     {
         var handler = new PlaceOrderCommandHandler(context, new FakeTimeProvider(PlacedAt));
         var response = await handler.HandleAsync(
-            new PlaceOrderCommand(customerId.Value, [.. gameIds.Select(gameId => gameId.Value)]),
+            new PlaceOrderCommand(customerId.Value, Email, CustomerName, [.. gameIds.Select(gameId => gameId.Value)]),
             cancellationToken
         );
 

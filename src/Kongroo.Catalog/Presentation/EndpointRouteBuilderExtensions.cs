@@ -255,7 +255,7 @@ public static class EndpointRouteBuilderExtensions
         CancellationToken cancellationToken
     )
     {
-        var command = new PlaceOrderCommand(user.GetUserId(), request.GameIds);
+        var command = new PlaceOrderCommand(user.GetUserId(), user.GetEmail(), user.GetCustomerName(), request.GameIds);
         var response = await handler.HandleAsync(command, cancellationToken);
 
         return TypedResults.CreatedAtRoute(response, "GetOrderById", new { orderId = response.Id });

@@ -21,11 +21,15 @@ public sealed class Order : Entity<OrderId>
 
     public static Order Place(
         CustomerId customerId,
+        string email,
+        string customerName,
         IReadOnlyList<GamePurchaseQuote> quotes,
         DateTimeOffset purchasedAt
     )
     {
         ArgumentNullException.ThrowIfNull(customerId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(email);
+        ArgumentException.ThrowIfNullOrWhiteSpace(customerName);
         ArgumentNullException.ThrowIfNull(quotes);
 
         if (quotes.Count == 0)
@@ -55,6 +59,8 @@ public sealed class Order : Entity<OrderId>
             new OrderPlacedDomainEvent(
                 order.Id,
                 order.CustomerId,
+                email,
+                customerName,
                 order.PurchasedAt,
                 order.Total,
                 [.. order._lines.Select(line => line.GameId)]

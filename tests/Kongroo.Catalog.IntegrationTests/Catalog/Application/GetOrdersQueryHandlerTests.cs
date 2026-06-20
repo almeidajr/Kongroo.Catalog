@@ -11,6 +11,8 @@ public sealed class GetOrdersQueryHandlerTests(PostgreSqlFixture postgreSqlFixtu
     : IClassFixture<PostgreSqlFixture>,
         IAsyncLifetime
 {
+    private const string Email = "ada@example.com";
+    private const string CustomerName = "Ada Lovelace";
     private readonly CatalogTestDatabase _database = new(postgreSqlFixture);
 
     [Fact]
@@ -183,7 +185,7 @@ public sealed class GetOrdersQueryHandlerTests(PostgreSqlFixture postgreSqlFixtu
     {
         var handler = new PlaceOrderCommandHandler(context, new FakeTimeProvider(purchasedAt));
         return await handler.HandleAsync(
-            new PlaceOrderCommand(customerId.Value, [.. gameIds.Select(gameId => gameId.Value)]),
+            new PlaceOrderCommand(customerId.Value, Email, CustomerName, [.. gameIds.Select(gameId => gameId.Value)]),
             cancellationToken
         );
     }
