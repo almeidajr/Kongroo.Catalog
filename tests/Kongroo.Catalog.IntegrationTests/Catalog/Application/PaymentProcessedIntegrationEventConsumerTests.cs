@@ -69,6 +69,48 @@ public sealed class PaymentProcessedIntegrationEventConsumerTests(PostgreSqlFixt
         ownerships.ShouldAllBe(ownership => ownership.AcquiredAt == ProcessedAt);
     }
 
+    [Fact]
+    public async Task Consume_WhenRejected_ShouldMarkOrderRejectedAndGrantNoOwnership()
+    {
+        // Arrange
+        await using var context = _database.CreateDbContext();
+        var customerId = CustomerId.Create();
+        var gameId = await CreatePublishedGameAsync(context, "Portal", 20m, TestContext.Current.CancellationToken);
+        var orderId = await PlacePendingOrderAsync(
+            context,
+            customerId,
+            [gameId],
+            TestContext.Current.CancellationToken
+        );
+        var consumer = new PaymentProcessedIntegrationEventConsumer(new ApplyPaymentResultCommandHandler(context));
+
+        var message = new PaymentProcessedIntegrationEvent(
+            orderId.Value,
+            customerId.Value,
+            Email,
+            CustomerName,
+            20m,
+            "USD",
+            Approved: false,
+            ProcessedAt
+        );
+        var consumeContext = Substitute.For<ConsumeContext<PaymentProcessedIntegrationEvent>>();
+        consumeContext.Message.Returns(message);
+        consumeContext.CancellationToken.Returns(TestContext.Current.CancellationToken);
+
+        // Act
+        await consumer.Consume(consumeContext);
+
+        // Assert
+        context.ChangeTracker.Clear();
+        var order = await context.Orders.SingleAsync(
+            candidate => candidate.Id == orderId,
+            TestContext.Current.CancellationToken
+        );
+        order.Status.ShouldBe(OrderStatus.Rejected);
+        (await context.Ownerships.CountAsync(TestContext.Current.CancellationToken)).ShouldBe(0);
+    }
+
     public async ValueTask InitializeAsync() => await _database.ResetAsync(TestContext.Current.CancellationToken);
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
