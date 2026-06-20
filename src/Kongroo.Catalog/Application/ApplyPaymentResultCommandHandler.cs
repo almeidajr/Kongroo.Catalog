@@ -15,6 +15,11 @@ public sealed class ApplyPaymentResultCommandHandler(CatalogDbContext context)
             await context.Orders.SingleOrDefaultAsync(candidate => candidate.Id == orderId, cancellationToken)
             ?? throw new NotFoundException(nameof(Order), $"identifier '{command.OrderId}'");
 
+        if (order.Status != OrderStatus.Pending)
+        {
+            return; // already decided — redelivered PaymentProcessed event
+        }
+
         if (command.Approved)
         {
             order.MarkPaid(command.ProcessedAt);

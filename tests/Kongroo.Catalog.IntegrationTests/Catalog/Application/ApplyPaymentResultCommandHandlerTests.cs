@@ -109,7 +109,7 @@ public sealed class ApplyPaymentResultCommandHandlerTests(PostgreSqlFixture post
     }
 
     [Fact]
-    public async Task HandleAsync_WhenOrderNotPending_ShouldThrowConflictException()
+    public async Task HandleAsync_WhenOrderAlreadyDecided_ShouldBeNoOp()
     {
         // Arrange
         await using var context = _database.CreateDbContext();
@@ -127,16 +127,25 @@ public sealed class ApplyPaymentResultCommandHandlerTests(PostgreSqlFixture post
             TestContext.Current.CancellationToken
         );
 
-        // Act
-        var exception = await Should.ThrowAsync<ConflictException>(() =>
-            handler.HandleAsync(
-                new ApplyPaymentResultCommand(orderId.Value, Approved: true, ProcessedAt.AddMinutes(1)),
-                TestContext.Current.CancellationToken
-            )
+        // Act — a redelivered event for the same order must not throw or double-apply
+        await handler.HandleAsync(
+            new ApplyPaymentResultCommand(orderId.Value, Approved: true, ProcessedAt.AddMinutes(1)),
+            TestContext.Current.CancellationToken
         );
 
         // Assert
-        exception.ResourceName.ShouldBe(nameof(Order));
+        context.ChangeTracker.Clear();
+        var order = await context.Orders.SingleAsync(
+            candidate => candidate.Id == orderId,
+            TestContext.Current.CancellationToken
+        );
+        order.Status.ShouldBe(OrderStatus.Paid);
+
+        var ownerships = await context
+            .Ownerships.AsNoTracking()
+            .Where(ownership => ownership.OrderId == orderId)
+            .ToListAsync(TestContext.Current.CancellationToken);
+        ownerships.Count.ShouldBe(1);
     }
 
     public async ValueTask InitializeAsync() => await _database.ResetAsync(TestContext.Current.CancellationToken);

@@ -53,6 +53,7 @@ public static class ServiceCollectionExtensions
             services.AddMassTransit(busRegistration =>
             {
                 busRegistration.SetKebabCaseEndpointNameFormatter();
+                busRegistration.AddConsumer<PaymentProcessedIntegrationEventConsumer>();
 
                 busRegistration.UsingRabbitMq((context, busFactory) => busFactory.ConfigureEndpoints(context));
             });
