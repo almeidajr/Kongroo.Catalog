@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: kongroo
-  labels:
-    app.kubernetes.io/name: kongroo
-    app.kubernetes.io/part-of: kongroo
-    app.kubernetes.io/managed-by: kubectl

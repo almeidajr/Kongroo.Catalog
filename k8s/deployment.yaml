@@ -2,14 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: catalog-api
-  namespace: kongroo
-  labels:
-    app.kubernetes.io/name: catalog-api
-    app.kubernetes.io/instance: catalog-api
-    app.kubernetes.io/version: "0.0.4"
-    app.kubernetes.io/component: api
-    app.kubernetes.io/part-of: kongroo
-    app.kubernetes.io/managed-by: kubectl
 spec:
   replicas: 1
   revisionHistoryLimit: 5
@@ -25,12 +17,6 @@ spec:
     metadata:
       labels:
         app: catalog-api
-        app.kubernetes.io/name: catalog-api
-        app.kubernetes.io/instance: catalog-api
-        app.kubernetes.io/version: "0.0.4"
-        app.kubernetes.io/component: api
-        app.kubernetes.io/part-of: kongroo
-        app.kubernetes.io/managed-by: kubectl
     spec:
       securityContext:
         runAsNonRoot: true
