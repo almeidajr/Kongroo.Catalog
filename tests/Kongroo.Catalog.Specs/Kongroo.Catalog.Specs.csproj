@@ -16,6 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Kongroo.Catalog.Api\Kongroo.Catalog.Api.csproj" />
+    <ProjectReference Include="..\..\src\Kongroo.Catalog\Kongroo.Catalog.csproj" />
   </ItemGroup>
 </Project>

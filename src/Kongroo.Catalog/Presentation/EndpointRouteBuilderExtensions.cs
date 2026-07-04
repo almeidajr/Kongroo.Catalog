@@ -1,11 +1,9 @@
 using System.ComponentModel;
 using System.Security.Claims;
-using Kongroo.BuildingBlocks.Presentation.Authorization;
 using Kongroo.Catalog.Application;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
+using Kongroo.Catalog.Presentation.Authorization;
+using Kongroo.Catalog.Presentation.Requests;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Routing;
 
 namespace Kongroo.Catalog.Presentation;
 

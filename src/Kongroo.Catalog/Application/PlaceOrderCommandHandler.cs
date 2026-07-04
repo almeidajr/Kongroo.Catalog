@@ -1,3 +1,4 @@
+using Kongroo.BuildingBlocks.Application;
 using Kongroo.BuildingBlocks.Domain.Exceptions;
 using Kongroo.Catalog.Domain;
 using Kongroo.Catalog.Infrastructure;
@@ -5,7 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Kongroo.Catalog.Application;
 
-public sealed class PlaceOrderCommandHandler(CatalogDbContext context, TimeProvider timeProvider)
+public sealed class PlaceOrderCommandHandler(
+    CatalogDbContext context,
+    TimeProvider timeProvider,
+    IUnitOfWork unitOfWork
+)
 {
     public async Task<GetOrderResponse> HandleAsync(PlaceOrderCommand command, CancellationToken cancellationToken)
     {
@@ -45,7 +50,7 @@ public sealed class PlaceOrderCommandHandler(CatalogDbContext context, TimeProvi
         var order = Order.Place(customerId, command.Email, command.CustomerName, quotes, purchasedAt);
 
         context.Orders.Add(order);
-        await context.SaveChangesAsync(cancellationToken);
+        await unitOfWork.CommitAsync(cancellationToken);
 
         return new GetOrderResponse(
             order.Id.Value,

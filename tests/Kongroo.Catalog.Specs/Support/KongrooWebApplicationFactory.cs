@@ -29,8 +29,6 @@ public sealed class KongrooWebApplicationFactory(
                     ["Jwt:Audience"] = SpecsJwt.Audience,
                     ["Jwt:SigningKey"] = SpecsJwt.SigningKey,
                     ["Jwt:AccessTokenLifetimeMinutes"] = "15",
-                    ["OutboxProcessing:PollingInterval"] = "00:10:00",
-                    ["OutboxProcessing:BatchSize"] = "1",
                 };
 
                 configurationBuilder.AddInMemoryCollection(testConfiguration);

@@ -10,7 +10,7 @@ public sealed class OrderTests
     private const string CustomerName = "Ada Lovelace";
 
     [Fact]
-    public void Place_WithSingleQuote_ShouldCreatePendingOrder()
+    public void Place_WithSingleQuote_ShouldCreatePendingOrderAndRaisePlacedEvent()
     {
         // Arrange
         var customerId = CustomerId.From(Guid.CreateVersion7());
@@ -28,20 +28,6 @@ public sealed class OrderTests
             () => order.Lines.Count.ShouldBe(1),
             () => order.Status.ShouldBe(OrderStatus.Pending)
         );
-    }
-
-    [Fact]
-    public void Place_WithSingleQuote_ShouldRaisePlacedEvent()
-    {
-        // Arrange
-        var customerId = CustomerId.From(Guid.CreateVersion7());
-        var quote = CreateQuote();
-        var purchasedAt = new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero);
-
-        // Act
-        var order = Order.Place(customerId, Email, CustomerName, [quote], purchasedAt);
-
-        // Assert
         var domainEvent = order.DomainEvents.Single().ShouldBeOfType<OrderPlacedDomainEvent>();
         domainEvent.ShouldSatisfyAllConditions(
             () => domainEvent.OrderId.ShouldBe(order.Id),

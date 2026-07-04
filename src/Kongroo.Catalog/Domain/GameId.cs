@@ -1,6 +1,8 @@
+using Kongroo.BuildingBlocks.Domain;
+
 namespace Kongroo.Catalog.Domain;
 
-public record GameId(Guid Value)
+public record GameId(Guid Value) : IGuidId<GameId>
 {
     public static GameId Create() => new(Guid.CreateVersion7());
 

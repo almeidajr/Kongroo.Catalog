@@ -1,8 +1,8 @@
-using Kongroo.BuildingBlocks.Contracts;
 using Kongroo.Catalog.Application;
 using Kongroo.Catalog.Domain;
 using Kongroo.Catalog.Infrastructure;
 using Kongroo.Catalog.IntegrationTests.Fixtures;
+using Kongroo.Payments.Contracts;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
@@ -43,7 +43,7 @@ public sealed class PaymentProcessedIntegrationEventConsumerTests(PostgreSqlFixt
             CustomerName,
             20m,
             "USD",
-            Approved: true,
+            IsApproved: true,
             ProcessedAt
         );
         var consumeContext = Substitute.For<ConsumeContext<PaymentProcessedIntegrationEvent>>();
@@ -91,7 +91,7 @@ public sealed class PaymentProcessedIntegrationEventConsumerTests(PostgreSqlFixt
             CustomerName,
             20m,
             "USD",
-            Approved: false,
+            IsApproved: false,
             ProcessedAt
         );
         var consumeContext = Substitute.For<ConsumeContext<PaymentProcessedIntegrationEvent>>();
@@ -151,7 +151,11 @@ public sealed class PaymentProcessedIntegrationEventConsumerTests(PostgreSqlFixt
         CancellationToken cancellationToken
     )
     {
-        var handler = new PlaceOrderCommandHandler(context, new FakeTimeProvider(PlacedAt));
+        var handler = new PlaceOrderCommandHandler(
+            context,
+            new FakeTimeProvider(PlacedAt),
+            new TestUnitOfWork(context)
+        );
         var response = await handler.HandleAsync(
             new PlaceOrderCommand(customerId.Value, Email, CustomerName, [.. gameIds.Select(gameId => gameId.Value)]),
             cancellationToken

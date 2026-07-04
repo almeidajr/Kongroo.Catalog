@@ -2,10 +2,10 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS restore
 WORKDIR /src
 COPY . .
-RUN dotnet restore src/Kongroo.Catalog.Api --locked-mode
+RUN dotnet restore src/Kongroo.Catalog --locked-mode
 
 FROM restore AS build
-RUN dotnet publish src/Kongroo.Catalog.Api \
+RUN dotnet publish src/Kongroo.Catalog \
     -c Release \
     -o /app/publish \
     --no-restore
@@ -27,4 +27,4 @@ USER kongroo
 
 EXPOSE 8080
 
-ENTRYPOINT ["dotnet", "Kongroo.Catalog.Api.dll"]
+ENTRYPOINT ["dotnet", "Kongroo.Catalog.dll"]

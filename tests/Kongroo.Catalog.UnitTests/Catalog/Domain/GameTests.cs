@@ -7,7 +7,7 @@ namespace Kongroo.Catalog.UnitTests.Catalog.Domain;
 public sealed class GameTests
 {
     [Fact]
-    public void Create_WithValidValues_ShouldInitializeGameWithDraftStatus()
+    public void Create_WithValidValues_ShouldInitializeGameWithDraftStatusAndRaiseCreatedEvent()
     {
         // Arrange
         var title = GameTitle.From("Portal");
@@ -19,42 +19,12 @@ public sealed class GameTests
 
         // Assert
         game.Status.ShouldBe(GameStatus.Draft);
-    }
-
-    [Fact]
-    public void Create_WithValidValues_ShouldRaiseCreatedEvent()
-    {
-        // Arrange
-        var title = GameTitle.From("Portal");
-        var description = GameDescription.From("A puzzle platformer.");
-        var price = Money.From(19.99m, Currency.Usd);
-
-        // Act
-        var game = Game.Create(title, description, price);
-
-        // Assert
         var domainEvent = game.DomainEvents.Single().ShouldBeOfType<GameCreatedDomainEvent>();
         domainEvent.GameId.ShouldBe(game.Id);
     }
 
     [Fact]
-    public void ChangeDetails_WithValidValues_ShouldUpdateTitleAndDescription()
-    {
-        // Arrange
-        var game = CreateGame();
-        var updatedTitle = GameTitle.From("Portal 2");
-        var updatedDescription = GameDescription.From("A cooperative puzzle platformer.");
-
-        // Act
-        game.ChangeDetails(updatedTitle, updatedDescription);
-
-        // Assert
-        game.Title.ShouldBe(updatedTitle);
-        game.Description.ShouldBe(updatedDescription);
-    }
-
-    [Fact]
-    public void ChangeDetails_WithValidValues_ShouldRaiseDetailsChangedEvent()
+    public void ChangeDetails_WithValidValues_ShouldUpdateTitleAndDescriptionAndRaiseDetailsChangedEvent()
     {
         // Arrange
         var game = CreateGame();
@@ -68,6 +38,8 @@ public sealed class GameTests
         game.ChangeDetails(updatedTitle, updatedDescription);
 
         // Assert
+        game.Title.ShouldBe(updatedTitle);
+        game.Description.ShouldBe(updatedDescription);
         var domainEvent = game.DomainEvents.Single().ShouldBeOfType<GameDetailsChangedDomainEvent>();
         domainEvent.GameId.ShouldBe(game.Id);
         domainEvent.PreviousTitle.ShouldBe(previousTitle);
@@ -91,21 +63,7 @@ public sealed class GameTests
     }
 
     [Fact]
-    public void ChangePrice_WithValidValue_ShouldUpdatePrice()
-    {
-        // Arrange
-        var game = CreateGame();
-        var updatedPrice = Money.From(29.99m, Currency.Eur);
-
-        // Act
-        game.ChangePrice(updatedPrice);
-
-        // Assert
-        game.Price.ShouldBe(updatedPrice);
-    }
-
-    [Fact]
-    public void ChangePrice_WithValidValue_ShouldRaisePriceChangedEvent()
+    public void ChangePrice_WithValidValue_ShouldUpdatePriceAndRaisePriceChangedEvent()
     {
         // Arrange
         var game = CreateGame();
@@ -117,6 +75,7 @@ public sealed class GameTests
         game.ChangePrice(updatedPrice);
 
         // Assert
+        game.Price.ShouldBe(updatedPrice);
         var domainEvent = game.DomainEvents.Single().ShouldBeOfType<GamePriceChangedDomainEvent>();
         domainEvent.GameId.ShouldBe(game.Id);
         domainEvent.PreviousPrice.ShouldBe(previousPrice);
@@ -169,7 +128,7 @@ public sealed class GameTests
     }
 
     [Fact]
-    public void CreatePromotion_WithNonOverlappingRange_ShouldAddPromotion()
+    public void CreatePromotion_WithNonOverlappingRange_ShouldAddPromotionAndRaisePromotionCreatedEvent()
     {
         // Arrange
         var game = CreateGame();
@@ -185,24 +144,6 @@ public sealed class GameTests
 
         // Assert
         game.Promotions.ShouldContain(promotion);
-    }
-
-    [Fact]
-    public void CreatePromotion_WithNonOverlappingRange_ShouldRaisePromotionCreatedEvent()
-    {
-        // Arrange
-        var game = CreateGame();
-        var discount = Percentage.From(25m);
-        var activeRange = DateTimeRange.From(
-            new DateTimeOffset(2026, 3, 30, 12, 0, 0, TimeSpan.Zero),
-            new DateTimeOffset(2026, 3, 31, 12, 0, 0, TimeSpan.Zero)
-        );
-        game.ClearDomainEvents();
-
-        // Act
-        var promotion = game.CreatePromotion(discount, activeRange);
-
-        // Assert
         var domainEvent = game.DomainEvents.Single().ShouldBeOfType<PromotionCreatedDomainEvent>();
         domainEvent.ShouldSatisfyAllConditions(
             () => domainEvent.GameId.ShouldBe(game.Id),

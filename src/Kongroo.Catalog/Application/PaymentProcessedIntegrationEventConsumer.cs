@@ -1,4 +1,4 @@
-using Kongroo.BuildingBlocks.Contracts;
+using Kongroo.Payments.Contracts;
 using MassTransit;
 
 namespace Kongroo.Catalog.Application;
@@ -12,7 +12,7 @@ public sealed class PaymentProcessedIntegrationEventConsumer(ApplyPaymentResultC
         var message = context.Message;
 
         return handler.HandleAsync(
-            new ApplyPaymentResultCommand(message.OrderId, message.Approved, message.ProcessedAt),
+            new ApplyPaymentResultCommand(message.OrderId, message.IsApproved, message.ProcessedAt),
             context.CancellationToken
         );
     }

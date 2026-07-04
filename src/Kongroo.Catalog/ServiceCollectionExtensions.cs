@@ -1,10 +1,9 @@
-using Kongroo.BuildingBlocks;
 using Kongroo.BuildingBlocks.Application;
+using Kongroo.BuildingBlocks.Infrastructure;
 using Kongroo.Catalog.Application;
 using Kongroo.Catalog.Infrastructure;
 using MassTransit;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 
 namespace Kongroo.Catalog;
 
@@ -35,7 +34,7 @@ public static class ServiceCollectionExtensions
 
             services.AddScoped<ApplyPaymentResultCommandHandler>();
 
-            services.AddScoped<IDomainEventHandler, OrderPlacedDomainEventHandler>();
+            services.AddDomainEventHandler<OrderPlacedDomainEventHandler>();
 
             services.AddScoped<GetOwnershipQueryHandler>();
             services.AddScoped<GetOwnershipsQueryHandler>();
@@ -43,7 +42,15 @@ public static class ServiceCollectionExtensions
 
         private void AddInfrastructure(IConfiguration configuration)
         {
-            services.AddOutboxDbContext<CatalogDbContext>(configuration);
+            services.AddSingleton(TimeProvider.System);
+
+            services.AddRelationalDbContext<CatalogDbContext>(contextOptions =>
+                contextOptions.UseNpgsql(
+                    configuration.GetConnectionString("Database"),
+                    postgresOptions => postgresOptions.MigrationsHistoryTable("migrations", CatalogDbContext.Schema)
+                )
+            );
+            services.AddDbInitializer<CatalogDbContext>();
 
             services
                 .AddOptions<RabbitMqTransportOptions>()
@@ -53,6 +60,13 @@ public static class ServiceCollectionExtensions
             services.AddMassTransit(busRegistration =>
             {
                 busRegistration.SetKebabCaseEndpointNameFormatter();
+
+                busRegistration.AddEntityFrameworkOutbox<CatalogDbContext>(outbox =>
+                {
+                    outbox.UsePostgres();
+                    outbox.UseBusOutbox();
+                });
+
                 busRegistration.AddConsumer<PaymentProcessedIntegrationEventConsumer>();
 
                 busRegistration.UsingRabbitMq((context, busFactory) => busFactory.ConfigureEndpoints(context));

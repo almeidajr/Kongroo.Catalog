@@ -1,0 +1,34 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net10.0": {
+      "Kongroo.BuildingBlocks.Application": {
+        "type": "Direct",
+        "requested": "[0.2.0, )",
+        "resolved": "0.2.0",
+        "contentHash": "CGIi1F30cVTC15YKYLbqVZq2P0JCamga4hIwrzSqMmNoPY0wwSaYspSMK80a2l5QutyKPNct2x3K0WHKmh6bmQ==",
+        "dependencies": {
+          "Kongroo.BuildingBlocks.Domain": "0.1.0",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9"
+        }
+      },
+      "SonarAnalyzer.CSharp": {
+        "type": "Direct",
+        "requested": "[10.27.0.140913, )",
+        "resolved": "10.27.0.140913",
+        "contentHash": "cxk12QjN9io1SjN36B1QO+9dRf+ek2CGfQGsOWtHBojE35cKchKJod48raxZwe47jHhzmAUO4AJSh7+hF0GS4g=="
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions": {
+        "type": "Transitive",
+        "resolved": "10.0.9",
+        "contentHash": "g41l/30G3K4B/d/L8kjux0+30e27c8D0FVQ/PFCpbekgfDpj9mnDhieP67EqXWvl1EWNeZh2rpR4F5B/jcDOHA=="
+      },
+      "Kongroo.BuildingBlocks.Domain": {
+        "type": "CentralTransitive",
+        "requested": "[0.1.0, )",
+        "resolved": "0.1.0",
+        "contentHash": "Q7gNMCULeAK7MM2i/J216UQUabqQVyer4i3KcFWrGve3KszERBAVimYb0l0+80oeIARoEq+cgsDfHAUpccZpbQ=="
+      }
+    }
+  }
+}

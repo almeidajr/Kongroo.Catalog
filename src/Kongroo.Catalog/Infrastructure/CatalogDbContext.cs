@@ -1,11 +1,12 @@
 using Kongroo.BuildingBlocks.Infrastructure;
 using Kongroo.Catalog.Domain;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kongroo.Catalog.Infrastructure;
 
 public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
-    : OutboxDbContext<CatalogDbContext>(options),
+    : RelationalDbContext<CatalogDbContext>(options),
         IRelationalDbContext
 {
     public static string Schema => "catalog";
@@ -19,6 +20,11 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
+
         modelBuilder.ApplyConfiguration(new GameConfiguration());
         modelBuilder.ApplyConfiguration(new OrderConfiguration());
         modelBuilder.ApplyConfiguration(new OwnershipConfiguration());

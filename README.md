@@ -1,4 +1,4 @@
-# Kongroo.Catalog
+# <img alt="Kongroo" src="./logo.png" width="40"/> Kongroo.Catalog
 
 Game catalog and user library microservice for FIAP Cloud Games.
 
@@ -19,12 +19,12 @@ Game catalog and user library microservice for FIAP Cloud Games.
 
 ## Environment Variables
 
-| Variable | Source | Description |
-|---|---|---|
-| `ConnectionStrings__Database` | Secret | PostgreSQL connection string |
-| `Jwt__Issuer` | ConfigMap | Must match Kongroo.Identity Jwt__Issuer |
-| `Jwt__Audience` | ConfigMap | Must match Kongroo.Identity Jwt__Audience |
-| `Jwt__SigningKey` | Secret | Must match Kongroo.Identity Jwt__SigningKey |
+| Variable                      | Source    | Description                                   |
+| ----------------------------- | --------- | --------------------------------------------- |
+| `ConnectionStrings__Database` | Secret    | PostgreSQL connection string                  |
+| `Jwt__Issuer`                 | ConfigMap | Must match Kongroo.Identity Jwt\_\_Issuer     |
+| `Jwt__Audience`               | ConfigMap | Must match Kongroo.Identity Jwt\_\_Audience   |
+| `Jwt__SigningKey`             | Secret    | Must match Kongroo.Identity Jwt\_\_SigningKey |
 
 ## Running Locally
 

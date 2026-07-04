@@ -36,7 +36,7 @@ public sealed class ApplyPaymentResultCommandHandlerTests(PostgreSqlFixture post
 
         // Act
         await handler.HandleAsync(
-            new ApplyPaymentResultCommand(orderId.Value, Approved: true, ProcessedAt),
+            new ApplyPaymentResultCommand(orderId.Value, IsApproved: true, ProcessedAt),
             TestContext.Current.CancellationToken
         );
 
@@ -74,7 +74,7 @@ public sealed class ApplyPaymentResultCommandHandlerTests(PostgreSqlFixture post
 
         // Act
         await handler.HandleAsync(
-            new ApplyPaymentResultCommand(orderId.Value, Approved: false, ProcessedAt),
+            new ApplyPaymentResultCommand(orderId.Value, IsApproved: false, ProcessedAt),
             TestContext.Current.CancellationToken
         );
 
@@ -99,7 +99,7 @@ public sealed class ApplyPaymentResultCommandHandlerTests(PostgreSqlFixture post
         // Act
         var exception = await Should.ThrowAsync<NotFoundException>(() =>
             handler.HandleAsync(
-                new ApplyPaymentResultCommand(missingOrderId, Approved: true, ProcessedAt),
+                new ApplyPaymentResultCommand(missingOrderId, IsApproved: true, ProcessedAt),
                 TestContext.Current.CancellationToken
             )
         );
@@ -123,13 +123,13 @@ public sealed class ApplyPaymentResultCommandHandlerTests(PostgreSqlFixture post
         );
         var handler = new ApplyPaymentResultCommandHandler(context);
         await handler.HandleAsync(
-            new ApplyPaymentResultCommand(orderId.Value, Approved: true, ProcessedAt),
+            new ApplyPaymentResultCommand(orderId.Value, IsApproved: true, ProcessedAt),
             TestContext.Current.CancellationToken
         );
 
-        // Act — a redelivered event for the same order must not throw or double-apply
+        // Act
         await handler.HandleAsync(
-            new ApplyPaymentResultCommand(orderId.Value, Approved: true, ProcessedAt.AddMinutes(1)),
+            new ApplyPaymentResultCommand(orderId.Value, IsApproved: true, ProcessedAt.AddMinutes(1)),
             TestContext.Current.CancellationToken
         );
 
@@ -188,7 +188,11 @@ public sealed class ApplyPaymentResultCommandHandlerTests(PostgreSqlFixture post
         CancellationToken cancellationToken
     )
     {
-        var handler = new PlaceOrderCommandHandler(context, new FakeTimeProvider(PlacedAt));
+        var handler = new PlaceOrderCommandHandler(
+            context,
+            new FakeTimeProvider(PlacedAt),
+            new TestUnitOfWork(context)
+        );
         var response = await handler.HandleAsync(
             new PlaceOrderCommand(customerId.Value, Email, CustomerName, [.. gameIds.Select(gameId => gameId.Value)]),
             cancellationToken

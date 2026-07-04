@@ -44,7 +44,7 @@ public sealed class PlaceOrderCommandHandlerTests(PostgreSqlFixture postgreSqlFi
             TestContext.Current.CancellationToken
         );
         var customerId = CustomerId.Create();
-        var handler = new PlaceOrderCommandHandler(context, new FakeTimeProvider(PurchasedAt));
+        var handler = CreateHandler(context);
 
         // Act
         var response = await handler.HandleAsync(
@@ -115,7 +115,7 @@ public sealed class PlaceOrderCommandHandlerTests(PostgreSqlFixture postgreSqlFi
             TestContext.Current.CancellationToken
         );
         var customerId = CustomerId.Create();
-        var handler = new PlaceOrderCommandHandler(context, new FakeTimeProvider(PurchasedAt));
+        var handler = CreateHandler(context);
 
         // Act
         var response = await handler.HandleAsync(
@@ -175,7 +175,7 @@ public sealed class PlaceOrderCommandHandlerTests(PostgreSqlFixture postgreSqlFi
             TestContext.Current.CancellationToken
         );
         var customerId = CustomerId.Create();
-        var handler = new PlaceOrderCommandHandler(context, new FakeTimeProvider(PurchasedAt));
+        var handler = CreateHandler(context);
 
         // Act
         var response = await handler.HandleAsync(
@@ -205,7 +205,7 @@ public sealed class PlaceOrderCommandHandlerTests(PostgreSqlFixture postgreSqlFi
             TestContext.Current.CancellationToken
         );
         var missingGameId = Guid.NewGuid();
-        var handler = new PlaceOrderCommandHandler(context, new FakeTimeProvider(PurchasedAt));
+        var handler = CreateHandler(context);
 
         // Act
         var exception = await Should.ThrowAsync<NotFoundException>(() =>
@@ -231,7 +231,7 @@ public sealed class PlaceOrderCommandHandlerTests(PostgreSqlFixture postgreSqlFi
         // Arrange
         await using var context = _database.CreateDbContext();
         var unpublishedGameId = await CreateGameAsync(context, "Portal", 20m, TestContext.Current.CancellationToken);
-        var handler = new PlaceOrderCommandHandler(context, new FakeTimeProvider(PurchasedAt));
+        var handler = CreateHandler(context);
 
         // Act
         var exception = await Should.ThrowAsync<ConflictException>(() =>
@@ -254,7 +254,7 @@ public sealed class PlaceOrderCommandHandlerTests(PostgreSqlFixture postgreSqlFi
         var gameId = await CreatePublishedGameAsync(context, "Portal", 20m, TestContext.Current.CancellationToken);
         var customerId = CustomerId.Create();
         await CreateOrderAsync(context, customerId, [gameId], TestContext.Current.CancellationToken);
-        var handler = new PlaceOrderCommandHandler(context, new FakeTimeProvider(PurchasedAt));
+        var handler = CreateHandler(context);
 
         // Act
         var exception = await Should.ThrowAsync<ConflictException>(() =>
@@ -275,7 +275,7 @@ public sealed class PlaceOrderCommandHandlerTests(PostgreSqlFixture postgreSqlFi
         // Arrange
         await using var context = _database.CreateDbContext();
         var gameId = await CreatePublishedGameAsync(context, "Portal", 20m, TestContext.Current.CancellationToken);
-        var handler = new PlaceOrderCommandHandler(context, new FakeTimeProvider(PurchasedAt));
+        var handler = CreateHandler(context);
 
         // Act
         var exception = await Should.ThrowAsync<ConflictException>(() =>
@@ -304,7 +304,7 @@ public sealed class PlaceOrderCommandHandlerTests(PostgreSqlFixture postgreSqlFi
         );
         var customerId = CustomerId.Create();
         await CreateOrderAsync(context, customerId, [ownedGameId], TestContext.Current.CancellationToken);
-        var handler = new PlaceOrderCommandHandler(context, new FakeTimeProvider(PurchasedAt));
+        var handler = CreateHandler(context);
 
         // Act
         await Should.ThrowAsync<ConflictException>(() =>
@@ -322,6 +322,9 @@ public sealed class PlaceOrderCommandHandlerTests(PostgreSqlFixture postgreSqlFi
     public async ValueTask InitializeAsync() => await _database.ResetAsync(TestContext.Current.CancellationToken);
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+
+    private static PlaceOrderCommandHandler CreateHandler(CatalogDbContext context) =>
+        new(context, new FakeTimeProvider(PurchasedAt), new TestUnitOfWork(context));
 
     private static async Task<GameId> CreateGameAsync(
         CatalogDbContext context,
@@ -386,7 +389,7 @@ public sealed class PlaceOrderCommandHandlerTests(PostgreSqlFixture postgreSqlFi
         CancellationToken cancellationToken
     )
     {
-        var handler = new PlaceOrderCommandHandler(context, new FakeTimeProvider(PurchasedAt));
+        var handler = CreateHandler(context);
         await handler.HandleAsync(
             new PlaceOrderCommand(customerId.Value, Email, CustomerName, [.. gameIds.Select(gameId => gameId.Value)]),
             cancellationToken

@@ -3,7 +3,7 @@ using Kongroo.BuildingBlocks.Domain.Exceptions;
 
 namespace Kongroo.Catalog.Domain;
 
-public sealed class Game : Entity<GameId>
+public sealed class Game : AggregateRoot<GameId>
 {
     private readonly List<Promotion> _promotions = [];
 

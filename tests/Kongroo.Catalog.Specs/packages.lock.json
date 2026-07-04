@@ -301,11 +301,6 @@
           "Microsoft.IdentityModel.Logging": "8.0.1"
         }
       },
-      "Microsoft.OpenApi": {
-        "type": "Transitive",
-        "resolved": "2.0.0",
-        "contentHash": "GGYLfzV/G/ct80OZ45JxnWP7NvMX1BCugn/lX7TH5o0lcVaviavsLMTxmFV2AybXWjbi3h6FF1vgZiTK6PXndw=="
-      },
       "Microsoft.Testing.Extensions.Telemetry": {
         "type": "Transitive",
         "resolved": "2.0.2",
@@ -556,41 +551,44 @@
           "xunit.v3.runner.common": "[3.2.2]"
         }
       },
-      "kongroo.buildingblocks": {
-        "type": "Project",
-        "dependencies": {
-          "EFCore.NamingConventions": "[10.0.1, )",
-          "Microsoft.EntityFrameworkCore": "[10.0.9, )",
-          "Microsoft.EntityFrameworkCore.Relational": "[10.0.9, )",
-          "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.2, )"
-        }
-      },
       "kongroo.catalog": {
-        "type": "Project",
-        "dependencies": {
-          "EFCore.NamingConventions": "[10.0.1, )",
-          "Kongroo.BuildingBlocks": "[1.0.0, )",
-          "MassTransit": "[8.5.10, )",
-          "MassTransit.RabbitMQ": "[8.5.10, )",
-          "Microsoft.AspNetCore.Authentication.JwtBearer": "[10.0.9, )",
-          "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.2, )"
-        }
-      },
-      "kongroo.catalog.api": {
         "type": "Project",
         "dependencies": {
           "AspNetCore.HealthChecks.NpgSql": "[9.0.0, )",
           "AspNetCore.HealthChecks.UI.Client": "[9.0.0, )",
-          "Kongroo.Catalog": "[1.0.0, )",
+          "EFCore.NamingConventions": "[10.0.1, )",
+          "Kongroo.BuildingBlocks.Application": "[0.2.0, )",
+          "Kongroo.BuildingBlocks.Domain": "[0.1.0, )",
+          "Kongroo.BuildingBlocks.Infrastructure": "[0.2.0, )",
+          "Kongroo.Catalog.Contracts": "[1.0.0, )",
+          "Kongroo.Payments.Contracts": "[1.0.0, )",
+          "MassTransit": "[8.5.10, )",
+          "MassTransit.EntityFrameworkCore": "[8.5.10, )",
+          "MassTransit.RabbitMQ": "[8.5.10, )",
+          "Microsoft.AspNetCore.Authentication.JwtBearer": "[10.0.9, )",
           "Microsoft.AspNetCore.OpenApi": "[10.0.9, )",
           "Microsoft.Extensions.Diagnostics.HealthChecks.Common": "[10.7.0, )",
           "Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore": "[10.0.9, )",
           "Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilization": "[10.7.0, )",
+          "Microsoft.OpenApi": "[2.9.0, )",
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.2, )",
           "Scalar.AspNetCore": "[2.16.4, )",
           "Serilog.AspNetCore": "[10.0.0, )",
           "Serilog.Enrichers.Environment": "[3.0.1, )",
           "Serilog.Enrichers.Process": "[3.0.0, )",
           "Serilog.Enrichers.Thread": "[4.0.0, )"
+        }
+      },
+      "kongroo.catalog.contracts": {
+        "type": "Project",
+        "dependencies": {
+          "Kongroo.BuildingBlocks.Application": "[0.2.0, )"
+        }
+      },
+      "kongroo.payments.contracts": {
+        "type": "Project",
+        "dependencies": {
+          "Kongroo.BuildingBlocks.Application": "[0.2.0, )"
         }
       },
       "AspNetCore.HealthChecks.NpgSql": {
@@ -621,6 +619,32 @@
           "Microsoft.EntityFrameworkCore.Relational": "[10.0.1, 11.0.0)"
         }
       },
+      "Kongroo.BuildingBlocks.Application": {
+        "type": "CentralTransitive",
+        "requested": "[0.2.0, )",
+        "resolved": "0.2.0",
+        "contentHash": "CGIi1F30cVTC15YKYLbqVZq2P0JCamga4hIwrzSqMmNoPY0wwSaYspSMK80a2l5QutyKPNct2x3K0WHKmh6bmQ==",
+        "dependencies": {
+          "Kongroo.BuildingBlocks.Domain": "0.1.0"
+        }
+      },
+      "Kongroo.BuildingBlocks.Domain": {
+        "type": "CentralTransitive",
+        "requested": "[0.1.0, )",
+        "resolved": "0.1.0",
+        "contentHash": "Q7gNMCULeAK7MM2i/J216UQUabqQVyer4i3KcFWrGve3KszERBAVimYb0l0+80oeIARoEq+cgsDfHAUpccZpbQ=="
+      },
+      "Kongroo.BuildingBlocks.Infrastructure": {
+        "type": "CentralTransitive",
+        "requested": "[0.2.0, )",
+        "resolved": "0.2.0",
+        "contentHash": "HQC7GK9sNeAdPvu5TWpWEVTBxkw7L4PJLMDJvqVJJivfOGLU/Xlb5Q4UpvRwdZ6bFE0sIFUsLWgmzNapX4ZbdA==",
+        "dependencies": {
+          "EFCore.NamingConventions": "10.0.1",
+          "Kongroo.BuildingBlocks.Application": "0.1.0",
+          "Microsoft.EntityFrameworkCore.Relational": "10.0.9"
+        }
+      },
       "MassTransit": {
         "type": "CentralTransitive",
         "requested": "[8.5.10, )",
@@ -628,6 +652,16 @@
         "contentHash": "TGi34UA8RftBIpYCHEdoIP5uSu2/pLWZRen4RUcg4CV1nr8MmCZMuFYjzvXXUyFcj0ZuRQxZZNhG7fB5/raSOg==",
         "dependencies": {
           "MassTransit.Abstractions": "8.5.10"
+        }
+      },
+      "MassTransit.EntityFrameworkCore": {
+        "type": "CentralTransitive",
+        "requested": "[8.5.10, )",
+        "resolved": "8.5.10",
+        "contentHash": "eCfWj3l4WMlDOc64I48yq3jePQMaQ+07hGIpWngvYW8/ey7qbayO4osHeO0m/FKBPUIfNJqTMRqAqWMn/xV+ww==",
+        "dependencies": {
+          "MassTransit": "8.5.10",
+          "Microsoft.EntityFrameworkCore.Relational": "10.0.0"
         }
       },
       "MassTransit.RabbitMQ": {
@@ -703,6 +737,12 @@
         "dependencies": {
           "Microsoft.Extensions.Diagnostics.ResourceMonitoring": "10.7.0"
         }
+      },
+      "Microsoft.OpenApi": {
+        "type": "CentralTransitive",
+        "requested": "[2.9.0, )",
+        "resolved": "2.9.0",
+        "contentHash": "uS2awDkgUvVhd735HEcNcOQdwbIDCAK3V1QzgWoszd/FPDLLVv9eF+fImmdJiGLIKKWJv2DMJQ7OSR9gYLd+uw=="
       },
       "Npgsql.EntityFrameworkCore.PostgreSQL": {
         "type": "CentralTransitive",

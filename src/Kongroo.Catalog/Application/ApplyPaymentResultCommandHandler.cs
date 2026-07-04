@@ -20,7 +20,7 @@ public sealed class ApplyPaymentResultCommandHandler(CatalogDbContext context)
             return; // already decided — redelivered PaymentProcessed event
         }
 
-        if (command.Approved)
+        if (command.IsApproved)
         {
             order.MarkPaid(command.ProcessedAt);
 

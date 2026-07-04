@@ -1,5 +1,5 @@
-using Kongroo.BuildingBlocks.Contracts;
 using Kongroo.Catalog.Application;
+using Kongroo.Catalog.Contracts;
 using Kongroo.Catalog.Domain;
 using MassTransit;
 using NSubstitute;
@@ -9,7 +9,7 @@ namespace Kongroo.Catalog.UnitTests.Catalog.Application;
 public sealed class OrderPlacedDomainEventHandlerTests
 {
     [Fact]
-    public async Task HandleAsync_ShouldPublishIntegrationEventWithMappedFields()
+    public async Task HandleAsync_WithOrderPlacedDomainEvent_ShouldPublishIntegrationEventWithMappedFields()
     {
         // Arrange
         var publishEndpoint = Substitute.For<IPublishEndpoint>();

@@ -1,4 +1,3 @@
-using Kongroo.BuildingBlocks.Infrastructure;
 using Kongroo.Catalog.Infrastructure;
 using Kongroo.Catalog.IntegrationTests.Fixtures;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +11,6 @@ public sealed class CatalogTestDatabase(PostgreSqlFixture fixture)
             new DbContextOptionsBuilder<CatalogDbContext>()
                 .EnableDetailedErrors()
                 .EnableSensitiveDataLogging()
-                .AddInterceptors(new OutboxMessagesInterceptor())
                 .UseNpgsql(
                     fixture.ConnectionString,
                     postgresOptions => postgresOptions.MigrationsHistoryTable("migrations", CatalogDbContext.Schema)
@@ -27,7 +25,6 @@ public sealed class CatalogTestDatabase(PostgreSqlFixture fixture)
         await context.Database.MigrateAsync(cancellationToken);
         var truncateTablesSql = $"""
             TRUNCATE TABLE
-                "{CatalogDbContext.Schema}"."outbox_messages",
                 "{CatalogDbContext.Schema}"."order_lines",
                 "{CatalogDbContext.Schema}"."orders",
                 "{CatalogDbContext.Schema}"."ownerships",

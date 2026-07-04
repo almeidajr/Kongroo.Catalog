@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using Kongroo.BuildingBlocks.Domain.Exceptions;
-using Kongroo.BuildingBlocks.Presentation.Authorization;
+using Kongroo.Catalog.Presentation.Authorization;
 using Shouldly;
 
 namespace Kongroo.Catalog.UnitTests.BuildingBlocks.Presentation.Authorization;
@@ -38,10 +38,7 @@ public sealed class ClaimsPrincipalExtensionsTests
     [Fact]
     public void GetCustomerName_WhenRawNameClaimPresent_ShouldPreferDisplayNameOverUsername()
     {
-        var user = CreatePrincipal(
-            new Claim("name", "Ada Lovelace"),
-            new Claim(MappedNameClaimType, "ada_92") // unique_name maps to ClaimTypes.Name
-        );
+        var user = CreatePrincipal(new Claim("name", "Ada Lovelace"), new Claim(MappedNameClaimType, "ada_92"));
 
         user.GetCustomerName().ShouldBe("Ada Lovelace");
     }

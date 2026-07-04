@@ -2,7 +2,7 @@ using Kongroo.BuildingBlocks.Domain;
 
 namespace Kongroo.Catalog.Domain;
 
-public sealed class Ownership : Entity<OwnershipId>
+public sealed class Ownership : AggregateRoot<OwnershipId>
 {
     private Ownership() { }
 

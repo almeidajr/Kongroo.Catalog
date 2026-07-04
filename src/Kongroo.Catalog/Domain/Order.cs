@@ -3,7 +3,7 @@ using Kongroo.BuildingBlocks.Domain.Exceptions;
 
 namespace Kongroo.Catalog.Domain;
 
-public sealed class Order : Entity<OrderId>
+public sealed class Order : AggregateRoot<OrderId>
 {
     private readonly List<OrderLine> _lines = [];
 

@@ -183,7 +183,11 @@ public sealed class GetOrdersQueryHandlerTests(PostgreSqlFixture postgreSqlFixtu
         CancellationToken cancellationToken
     )
     {
-        var handler = new PlaceOrderCommandHandler(context, new FakeTimeProvider(purchasedAt));
+        var handler = new PlaceOrderCommandHandler(
+            context,
+            new FakeTimeProvider(purchasedAt),
+            new TestUnitOfWork(context)
+        );
         return await handler.HandleAsync(
             new PlaceOrderCommand(customerId.Value, Email, CustomerName, [.. gameIds.Select(gameId => gameId.Value)]),
             cancellationToken
