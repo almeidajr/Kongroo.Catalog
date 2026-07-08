@@ -19,7 +19,8 @@ public sealed class OrderPlacedDomainEventHandler(IPublishEndpoint publishEndpoi
                 domainEvent.Email,
                 domainEvent.CustomerName,
                 domainEvent.Total.Amount,
-                CurrencyMappings.ToCode(domainEvent.Total.Currency)
+                CurrencyMappings.ToCode(domainEvent.Total.Currency),
+                [.. domainEvent.Lines.Select(line => new OrderPlacedLine(line.GameId.Value, line.Price.Amount))]
             ),
             cancellationToken
         );

@@ -37,6 +37,7 @@ public sealed class PaymentProcessedIntegrationEventConsumerTests(PostgreSqlFixt
         var consumer = new PaymentProcessedIntegrationEventConsumer(new ApplyPaymentResultCommandHandler(context));
 
         var message = new PaymentProcessedIntegrationEvent(
+            Guid.CreateVersion7(),
             orderId.Value,
             customerId.Value,
             Email,
@@ -85,6 +86,7 @@ public sealed class PaymentProcessedIntegrationEventConsumerTests(PostgreSqlFixt
         var consumer = new PaymentProcessedIntegrationEventConsumer(new ApplyPaymentResultCommandHandler(context));
 
         var message = new PaymentProcessedIntegrationEvent(
+            Guid.CreateVersion7(),
             orderId.Value,
             customerId.Value,
             Email,

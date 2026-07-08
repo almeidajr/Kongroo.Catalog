@@ -38,6 +38,9 @@ public sealed class OrderTests
             () => domainEvent.Total.ShouldBe(order.Total)
         );
         domainEvent.GameIds.ShouldBe([quote.GameId]);
+        domainEvent.Lines.Count.ShouldBe(1);
+        domainEvent.Lines[0].GameId.ShouldBe(quote.GameId);
+        domainEvent.Lines[0].Price.ShouldBe(quote.FinalPrice);
     }
 
     [Fact]
@@ -69,6 +72,12 @@ public sealed class OrderTests
 
         // Assert
         order.Total.ShouldBe(Money.From(33m, Currency.Usd));
+        var domainEvent = order.DomainEvents.Single().ShouldBeOfType<OrderPlacedDomainEvent>();
+        domainEvent.Lines.Count.ShouldBe(2);
+        domainEvent.Lines[0].GameId.ShouldBe(firstQuote.GameId);
+        domainEvent.Lines[0].Price.ShouldBe(firstQuote.FinalPrice);
+        domainEvent.Lines[1].GameId.ShouldBe(secondQuote.GameId);
+        domainEvent.Lines[1].Price.ShouldBe(secondQuote.FinalPrice);
     }
 
     [Fact]

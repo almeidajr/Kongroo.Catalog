@@ -2,11 +2,14 @@ using Kongroo.BuildingBlocks.Application;
 
 namespace Kongroo.Catalog.Contracts;
 
+public sealed record OrderPlacedLine(Guid GameId, decimal UnitPrice);
+
 public sealed record OrderPlacedIntegrationEvent(
     Guid OrderId,
     Guid CustomerId,
-    string Email,
+    string CustomerEmail,
     string CustomerName,
-    decimal Amount,
-    string Currency
+    decimal TotalAmount,
+    string Currency,
+    IReadOnlyList<OrderPlacedLine> Lines
 ) : IntegrationEvent;

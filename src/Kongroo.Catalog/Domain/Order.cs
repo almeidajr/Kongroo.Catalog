@@ -63,7 +63,7 @@ public sealed class Order : AggregateRoot<OrderId>
                 customerName,
                 order.PurchasedAt,
                 order.Total,
-                [.. order._lines.Select(line => line.GameId)]
+                [.. order._lines.Select(line => new OrderPlacedGameLine(line.GameId, line.FinalPrice))]
             )
         );
 
