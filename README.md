@@ -20,9 +20,12 @@ Game catalog and user library microservice for FIAP Cloud Games.
 ## Messaging
 
 When an authenticated user places an order, Catalog publishes `OrderPlacedIntegrationEvent`
-through RabbitMQ. The event includes the order id, `UserId`, customer contact fields,
-the order total, and `Games[]` entries with each purchased `GameId`, `Price`, and
-`Currency`.
+through RabbitMQ. The event includes the order id, `CustomerId`, customer contact fields,
+the order total, `Currency`, and `Lines[]` entries with each purchased `GameId` and
+`UnitPrice`.
+
+Catalog also consumes `PaymentProcessedIntegrationEvent` from Payments and applies the
+payment result to the originating order.
 
 ## Environment Variables
 
