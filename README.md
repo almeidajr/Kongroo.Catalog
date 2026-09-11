@@ -66,7 +66,7 @@ tier (5 min) and an in-process tier (1 min). Every game or promotion write evict
 ## Running Locally
 
 ```bash
-docker compose up postgres rabbitmq -d   # from Kongroo.Orchestration
+docker compose up postgres rabbitmq mongodb redis -d   # from Kongroo.Orchestration
 dotnet run --project src/Kongroo.Catalog
 ```
 

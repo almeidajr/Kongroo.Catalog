@@ -38,6 +38,7 @@ spec:
                 name: catalog-secret
             - secretRef:
                 name: aws-credentials
+                optional: true
           resources:
             requests:
               cpu: 100m

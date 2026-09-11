@@ -8,7 +8,7 @@ namespace Kongroo.Catalog.Application;
 
 public sealed class GetGameReviewsQueryHandler(CatalogDbContext context, IMongoCollection<ReviewDocument> reviews)
 {
-    public const int PageSize = 100;
+    public const int MaxReviews = 100;
 
     public async Task<GetGameReviewsResponse> HandleAsync(
         GetGameReviewsQuery query,
@@ -35,7 +35,7 @@ public sealed class GetGameReviewsQueryHandler(CatalogDbContext context, IMongoC
         var latest = await reviews
             .Find(review => review.GameId == query.GameId)
             .SortByDescending(review => review.CreatedAt)
-            .Limit(PageSize)
+            .Limit(MaxReviews)
             .ToListAsync(cancellationToken);
 
         return new GetGameReviewsResponse(

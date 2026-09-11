@@ -121,11 +121,13 @@ public static class ServiceCollectionExtensions
 
                 if (transport == MessagingTransport.AmazonSqs)
                 {
-                    var region =
-                        configuration.GetValue<string>("Aws:Region")
-                        ?? throw new InvalidOperationException(
+                    var region = configuration.GetValue<string>("Aws:Region");
+                    if (string.IsNullOrWhiteSpace(region))
+                    {
+                        throw new InvalidOperationException(
                             "Configuration value 'Aws:Region' is required when Messaging:Transport is AmazonSqs."
                         );
+                    }
 
                     busRegistration.UsingAmazonSqs(
                         (context, busFactory) =>

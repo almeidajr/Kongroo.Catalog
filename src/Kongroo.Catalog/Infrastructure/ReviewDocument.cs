@@ -4,6 +4,10 @@ using MongoDB.Bson.Serialization.Attributes;
 namespace Kongroo.Catalog.Infrastructure;
 
 /// <summary>A customer's review of a game, stored in the MongoDB <c>reviews</c> collection.</summary>
+/// <remarks>
+/// A mutable class with <c>init</c> setters rather than a record because the MongoDB driver's
+/// attribute-based class map targets it.
+/// </remarks>
 public sealed class ReviewDocument
 {
     public const string CollectionName = "reviews";
