@@ -11,7 +11,9 @@ using Kongroo.Catalog.Presentation.Authorization;
 using Kongroo.Catalog.Presentation.OpenApi;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Driver;
 using Scalar.AspNetCore;
 using Serilog;
 
@@ -52,7 +54,13 @@ builder
     .AddApplicationLifecycleHealthCheck()
     .AddResourceUtilizationHealthCheck()
     .AddNpgSql(_ => builder.Configuration.GetRequiredConnectionString("Database"), tags: ["ready"])
-    .AddDbContextCheck<CatalogDbContext>(tags: ["ready"]);
+    .AddDbContextCheck<CatalogDbContext>(tags: ["ready"])
+    .AddMongoDb(
+        provider => provider.GetRequiredService<IMongoClient>(),
+        provider => provider.GetRequiredService<IOptions<MongoOptions>>().Value.Database,
+        name: "mongodb",
+        tags: ["ready"]
+    );
 
 builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

@@ -4,6 +4,8 @@ using Kongroo.Catalog.Application;
 using Kongroo.Catalog.Infrastructure;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 
 namespace Kongroo.Catalog;
 
@@ -51,6 +53,25 @@ public static class ServiceCollectionExtensions
                 )
             );
             services.AddDbInitializer<CatalogDbContext>();
+
+            services
+                .AddOptions<MongoOptions>()
+                .Bind(configuration.GetRequiredSection(MongoOptions.SectionName))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+            services.AddSingleton<IMongoClient>(provider => new MongoClient(
+                provider.GetRequiredService<IOptions<MongoOptions>>().Value.ConnectionString
+            ));
+            services.AddSingleton(provider =>
+            {
+                var mongoOptions = provider.GetRequiredService<IOptions<MongoOptions>>().Value;
+
+                return provider
+                    .GetRequiredService<IMongoClient>()
+                    .GetDatabase(mongoOptions.Database)
+                    .GetCollection<ReviewDocument>(ReviewDocument.CollectionName);
+            });
+            services.AddApplicationInitializer<ReviewIndexInitializer>();
 
             services
                 .AddOptions<RabbitMqTransportOptions>()
