@@ -2,10 +2,11 @@ using Kongroo.BuildingBlocks.Domain.Exceptions;
 using Kongroo.Catalog.Domain;
 using Kongroo.Catalog.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Kongroo.Catalog.Application;
 
-public sealed class CreatePromotionCommandHandler(CatalogDbContext context)
+public sealed class CreatePromotionCommandHandler(CatalogDbContext context, HybridCache cache)
 {
     public async Task<GetPromotionResponse> HandleAsync(
         CreatePromotionCommand command,
@@ -25,6 +26,7 @@ public sealed class CreatePromotionCommandHandler(CatalogDbContext context)
         );
 
         await context.SaveChangesAsync(cancellationToken);
+        await cache.RemoveByTagAsync(GamesCache.Tag, cancellationToken);
 
         return new GetPromotionResponse(
             promotion.Id.Value,

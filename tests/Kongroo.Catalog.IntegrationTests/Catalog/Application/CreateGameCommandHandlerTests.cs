@@ -17,7 +17,7 @@ public sealed class CreateGameCommandHandlerTests(PostgreSqlFixture postgreSqlFi
     {
         // Arrange
         await using var context = _database.CreateDbContext();
-        var handler = new CreateGameCommandHandler(context);
+        var handler = new CreateGameCommandHandler(context, TestCache.Create());
 
         // Act
         var response = await handler.HandleAsync(
@@ -41,7 +41,7 @@ public sealed class CreateGameCommandHandlerTests(PostgreSqlFixture postgreSqlFi
     {
         // Arrange
         await using var context = _database.CreateDbContext();
-        var handler = new CreateGameCommandHandler(context);
+        var handler = new CreateGameCommandHandler(context, TestCache.Create());
 
         // Act
         var response = await handler.HandleAsync(

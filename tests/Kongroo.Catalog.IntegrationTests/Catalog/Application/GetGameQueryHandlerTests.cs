@@ -21,7 +21,7 @@ public sealed class GetGameQueryHandlerTests(PostgreSqlFixture postgreSqlFixture
         // Arrange
         await using var context = _database.CreateDbContext();
         var gameId = await CreateGameAsync(context, TestContext.Current.CancellationToken);
-        var handler = new GetGameQueryHandler(context, new FakeTimeProvider(ReadAt));
+        var handler = new GetGameQueryHandler(context, new FakeTimeProvider(ReadAt), TestCache.Create());
 
         // Act
         var response = await handler.HandleAsync(new GetGameQuery(gameId.Value), TestContext.Current.CancellationToken);
@@ -52,7 +52,7 @@ public sealed class GetGameQueryHandlerTests(PostgreSqlFixture postgreSqlFixture
             ReadAt.AddDays(1),
             TestContext.Current.CancellationToken
         );
-        var handler = new GetGameQueryHandler(context, new FakeTimeProvider(ReadAt));
+        var handler = new GetGameQueryHandler(context, new FakeTimeProvider(ReadAt), TestCache.Create());
 
         // Act
         var response = await handler.HandleAsync(new GetGameQuery(gameId.Value), TestContext.Current.CancellationToken);
@@ -82,7 +82,7 @@ public sealed class GetGameQueryHandlerTests(PostgreSqlFixture postgreSqlFixture
             ReadAt.AddDays(-1),
             TestContext.Current.CancellationToken
         );
-        var handler = new GetGameQueryHandler(context, new FakeTimeProvider(ReadAt));
+        var handler = new GetGameQueryHandler(context, new FakeTimeProvider(ReadAt), TestCache.Create());
 
         // Act
         var response = await handler.HandleAsync(new GetGameQuery(gameId.Value), TestContext.Current.CancellationToken);
@@ -97,7 +97,7 @@ public sealed class GetGameQueryHandlerTests(PostgreSqlFixture postgreSqlFixture
         // Arrange
         await using var context = _database.CreateDbContext();
         var missingGameId = Guid.NewGuid();
-        var handler = new GetGameQueryHandler(context, new FakeTimeProvider(ReadAt));
+        var handler = new GetGameQueryHandler(context, new FakeTimeProvider(ReadAt), TestCache.Create());
 
         // Act
         var exception = await Should.ThrowAsync<NotFoundException>(() =>
@@ -115,7 +115,7 @@ public sealed class GetGameQueryHandlerTests(PostgreSqlFixture postgreSqlFixture
 
     private static async Task<GameId> CreateGameAsync(CatalogDbContext context, CancellationToken cancellationToken)
     {
-        var handler = new CreateGameCommandHandler(context);
+        var handler = new CreateGameCommandHandler(context, TestCache.Create());
         var response = await handler.HandleAsync(
             new CreateGameCommand("Portal", "A puzzle platformer.", 19.99m, Currency.Usd),
             cancellationToken
@@ -130,7 +130,7 @@ public sealed class GetGameQueryHandlerTests(PostgreSqlFixture postgreSqlFixture
     )
     {
         var gameId = await CreateGameAsync(context, cancellationToken);
-        var handler = new UpdateGameCommandHandler(context, new FakeTimeProvider(ReadAt));
+        var handler = new UpdateGameCommandHandler(context, new FakeTimeProvider(ReadAt), TestCache.Create());
         await handler.HandleAsync(
             new UpdateGameCommand(
                 gameId.Value,
@@ -155,7 +155,7 @@ public sealed class GetGameQueryHandlerTests(PostgreSqlFixture postgreSqlFixture
         CancellationToken cancellationToken
     )
     {
-        var handler = new CreatePromotionCommandHandler(context);
+        var handler = new CreatePromotionCommandHandler(context, TestCache.Create());
         return await handler.HandleAsync(
             new CreatePromotionCommand(gameId.Value, discount, startsAt, endsAt),
             cancellationToken

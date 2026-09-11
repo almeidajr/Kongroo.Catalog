@@ -2,16 +2,31 @@ using Kongroo.BuildingBlocks.Domain.Exceptions;
 using Kongroo.Catalog.Domain;
 using Kongroo.Catalog.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Kongroo.Catalog.Application;
 
-public sealed class GetGameQueryHandler(CatalogDbContext context, TimeProvider timeProvider)
+public sealed class GetGameQueryHandler(CatalogDbContext context, TimeProvider timeProvider, HybridCache cache)
 {
-    public async Task<GetGameResponse> HandleAsync(GetGameQuery query, CancellationToken cancellationToken)
+    public async Task<GetGameResponse> HandleAsync(GetGameQuery query, CancellationToken cancellationToken) =>
+        await cache.GetOrCreateAsync(
+            GamesCache.GameKey(query.GameId),
+            (context, timeProvider, query),
+            static (state, token) => LoadAsync(state.context, state.timeProvider, state.query, token),
+            tags: [GamesCache.Tag],
+            cancellationToken: cancellationToken
+        );
+
+    private static async ValueTask<GetGameResponse> LoadAsync(
+        CatalogDbContext context,
+        TimeProvider timeProvider,
+        GetGameQuery query,
+        CancellationToken cancellationToken
+    )
     {
         var now = timeProvider.GetUtcNow();
-        var game =
-            await context
+
+        return await context
                 .Games.AsNoTracking()
                 .Where(game => game.Id == GameId.From(query.GameId))
                 .Select(game => new GetGameResponse(
@@ -35,7 +50,5 @@ public sealed class GetGameQueryHandler(CatalogDbContext context, TimeProvider t
                 ))
                 .SingleOrDefaultAsync(cancellationToken)
             ?? throw new NotFoundException(nameof(Game), $"identifier '{query.GameId}'");
-
-        return game;
     }
 }

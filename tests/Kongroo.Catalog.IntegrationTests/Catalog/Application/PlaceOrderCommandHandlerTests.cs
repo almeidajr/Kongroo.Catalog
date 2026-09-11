@@ -333,7 +333,7 @@ public sealed class PlaceOrderCommandHandlerTests(PostgreSqlFixture postgreSqlFi
         CancellationToken cancellationToken
     )
     {
-        var handler = new CreateGameCommandHandler(context);
+        var handler = new CreateGameCommandHandler(context, TestCache.Create());
         var response = await handler.HandleAsync(
             new CreateGameCommand(title, $"{title} description.", priceAmount, Currency.Usd),
             cancellationToken
@@ -350,7 +350,7 @@ public sealed class PlaceOrderCommandHandlerTests(PostgreSqlFixture postgreSqlFi
     )
     {
         var gameId = await CreateGameAsync(context, title, priceAmount, cancellationToken);
-        var handler = new UpdateGameCommandHandler(context, new FakeTimeProvider(PurchasedAt));
+        var handler = new UpdateGameCommandHandler(context, new FakeTimeProvider(PurchasedAt), TestCache.Create());
         await handler.HandleAsync(
             new UpdateGameCommand(
                 gameId.Value,
@@ -375,7 +375,7 @@ public sealed class PlaceOrderCommandHandlerTests(PostgreSqlFixture postgreSqlFi
         CancellationToken cancellationToken
     )
     {
-        var handler = new CreatePromotionCommandHandler(context);
+        var handler = new CreatePromotionCommandHandler(context, TestCache.Create());
         return await handler.HandleAsync(
             new CreatePromotionCommand(gameId.Value, discount, startsAt, endsAt),
             cancellationToken

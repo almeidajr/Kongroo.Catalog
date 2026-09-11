@@ -2,10 +2,11 @@ using Kongroo.BuildingBlocks.Domain.Exceptions;
 using Kongroo.Catalog.Domain;
 using Kongroo.Catalog.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Kongroo.Catalog.Application;
 
-public sealed class UpdateGameCommandHandler(CatalogDbContext context, TimeProvider timeProvider)
+public sealed class UpdateGameCommandHandler(CatalogDbContext context, TimeProvider timeProvider, HybridCache cache)
 {
     public async Task<GetGameResponse> HandleAsync(UpdateGameCommand command, CancellationToken cancellationToken)
     {
@@ -21,6 +22,7 @@ public sealed class UpdateGameCommandHandler(CatalogDbContext context, TimeProvi
         game.ChangeStatus(command.Status);
 
         await context.SaveChangesAsync(cancellationToken);
+        await cache.RemoveByTagAsync(GamesCache.Tag, cancellationToken);
 
         var activePromotion = game.GetActivePromotion(timeProvider.GetUtcNow());
 

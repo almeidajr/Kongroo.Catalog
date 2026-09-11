@@ -19,7 +19,7 @@ public sealed class GetGamesQueryHandlerTests(PostgreSqlFixture postgreSqlFixtur
     {
         // Arrange
         await using var context = _database.CreateDbContext();
-        var handler = new GetGamesQueryHandler(context, new FakeTimeProvider(ReadAt));
+        var handler = new GetGamesQueryHandler(context, new FakeTimeProvider(ReadAt), TestCache.Create());
 
         // Act
         var response = await handler.HandleAsync(new GetGamesQuery(), TestContext.Current.CancellationToken);
@@ -50,7 +50,7 @@ public sealed class GetGamesQueryHandlerTests(PostgreSqlFixture postgreSqlFixtur
             TestContext.Current.CancellationToken
         );
 
-        var handler = new GetGamesQueryHandler(context, new FakeTimeProvider(ReadAt));
+        var handler = new GetGamesQueryHandler(context, new FakeTimeProvider(ReadAt), TestCache.Create());
 
         // Act
         var response = await handler.HandleAsync(new GetGamesQuery(), TestContext.Current.CancellationToken);
@@ -74,7 +74,7 @@ public sealed class GetGamesQueryHandlerTests(PostgreSqlFixture postgreSqlFixtur
             ReadAt.AddDays(1),
             TestContext.Current.CancellationToken
         );
-        var handler = new GetGamesQueryHandler(context, new FakeTimeProvider(ReadAt));
+        var handler = new GetGamesQueryHandler(context, new FakeTimeProvider(ReadAt), TestCache.Create());
 
         // Act
         var response = await handler.HandleAsync(new GetGamesQuery(), TestContext.Current.CancellationToken);
@@ -107,7 +107,7 @@ public sealed class GetGamesQueryHandlerTests(PostgreSqlFixture postgreSqlFixtur
             ReadAt.AddDays(-1),
             TestContext.Current.CancellationToken
         );
-        var handler = new GetGamesQueryHandler(context, new FakeTimeProvider(ReadAt));
+        var handler = new GetGamesQueryHandler(context, new FakeTimeProvider(ReadAt), TestCache.Create());
 
         // Act
         var response = await handler.HandleAsync(new GetGamesQuery(), TestContext.Current.CancellationToken);
@@ -126,7 +126,7 @@ public sealed class GetGamesQueryHandlerTests(PostgreSqlFixture postgreSqlFixtur
         CancellationToken cancellationToken
     )
     {
-        var handler = new CreateGameCommandHandler(context);
+        var handler = new CreateGameCommandHandler(context, TestCache.Create());
         await handler.HandleAsync(command, cancellationToken);
     }
 
@@ -137,13 +137,13 @@ public sealed class GetGamesQueryHandlerTests(PostgreSqlFixture postgreSqlFixtur
         CancellationToken cancellationToken
     )
     {
-        var createGameHandler = new CreateGameCommandHandler(context);
+        var createGameHandler = new CreateGameCommandHandler(context, TestCache.Create());
         var createGameResponse = await createGameHandler.HandleAsync(
             new CreateGameCommand(title, $"{title} description.", priceAmount, Currency.Usd),
             cancellationToken
         );
 
-        var updateGameHandler = new UpdateGameCommandHandler(context, new FakeTimeProvider(ReadAt));
+        var updateGameHandler = new UpdateGameCommandHandler(context, new FakeTimeProvider(ReadAt), TestCache.Create());
         await updateGameHandler.HandleAsync(
             new UpdateGameCommand(
                 createGameResponse.Id,
@@ -168,7 +168,7 @@ public sealed class GetGamesQueryHandlerTests(PostgreSqlFixture postgreSqlFixtur
         CancellationToken cancellationToken
     )
     {
-        var handler = new CreatePromotionCommandHandler(context);
+        var handler = new CreatePromotionCommandHandler(context, TestCache.Create());
         return await handler.HandleAsync(
             new CreatePromotionCommand(gameId.Value, discount, startsAt, endsAt),
             cancellationToken

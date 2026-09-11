@@ -21,7 +21,7 @@ public sealed class DeleteGameCommandHandlerTests(PostgreSqlFixture postgreSqlFi
         await using var context = _database.CreateDbContext();
         var gameId = await CreateGameAsync(context, TestContext.Current.CancellationToken);
 
-        var handler = new DeleteGameCommandHandler(context);
+        var handler = new DeleteGameCommandHandler(context, TestCache.Create());
 
         // Act
         await handler.HandleAsync(new DeleteGameCommand(gameId.Value), TestContext.Current.CancellationToken);
@@ -37,7 +37,7 @@ public sealed class DeleteGameCommandHandlerTests(PostgreSqlFixture postgreSqlFi
         // Arrange
         await using var context = _database.CreateDbContext();
         var missingGameId = Guid.NewGuid();
-        var handler = new DeleteGameCommandHandler(context);
+        var handler = new DeleteGameCommandHandler(context, TestCache.Create());
 
         // Act
         var exception = await Should.ThrowAsync<NotFoundException>(() =>
@@ -55,7 +55,7 @@ public sealed class DeleteGameCommandHandlerTests(PostgreSqlFixture postgreSqlFi
 
     private static async Task<GameId> CreateGameAsync(CatalogDbContext context, CancellationToken cancellationToken)
     {
-        var handler = new CreateGameCommandHandler(context);
+        var handler = new CreateGameCommandHandler(context, TestCache.Create());
         var response = await handler.HandleAsync(
             new CreateGameCommand("Portal", "A puzzle platformer.", 19.99m, Currency.Usd),
             cancellationToken

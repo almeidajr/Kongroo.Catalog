@@ -60,7 +60,8 @@ builder
         provider => provider.GetRequiredService<IOptions<MongoOptions>>().Value.Database,
         name: "mongodb",
         tags: ["ready"]
-    );
+    )
+    .AddRedis(builder.Configuration.GetRequiredConnectionString("Redis"), name: "redis", tags: ["ready"]);
 
 builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

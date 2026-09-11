@@ -4,6 +4,7 @@ using Kongroo.Catalog.Application;
 using Kongroo.Catalog.Infrastructure;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
@@ -74,6 +75,19 @@ public static class ServiceCollectionExtensions
                     .GetCollection<ReviewDocument>(ReviewDocument.CollectionName);
             });
             services.AddApplicationInitializer<ReviewIndexInitializer>();
+
+            services.AddStackExchangeRedisCache(redisOptions =>
+            {
+                redisOptions.Configuration = configuration.GetRequiredConnectionString("Redis");
+                redisOptions.InstanceName = "catalog:";
+            });
+            services.AddHybridCache(cacheOptions =>
+                cacheOptions.DefaultEntryOptions = new HybridCacheEntryOptions
+                {
+                    Expiration = TimeSpan.FromMinutes(5),
+                    LocalCacheExpiration = TimeSpan.FromMinutes(1),
+                }
+            );
 
             services
                 .AddOptions<RabbitMqTransportOptions>()

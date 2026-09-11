@@ -130,13 +130,17 @@ public sealed class GetOrderQueryHandlerTests(PostgreSqlFixture postgreSqlFixtur
         CancellationToken cancellationToken
     )
     {
-        var createGameHandler = new CreateGameCommandHandler(context);
+        var createGameHandler = new CreateGameCommandHandler(context, TestCache.Create());
         var createGameResponse = await createGameHandler.HandleAsync(
             new CreateGameCommand(title, $"{title} description.", priceAmount, Currency.Usd),
             cancellationToken
         );
 
-        var updateGameHandler = new UpdateGameCommandHandler(context, new FakeTimeProvider(DateTimeOffset.UtcNow));
+        var updateGameHandler = new UpdateGameCommandHandler(
+            context,
+            new FakeTimeProvider(DateTimeOffset.UtcNow),
+            TestCache.Create()
+        );
         await updateGameHandler.HandleAsync(
             new UpdateGameCommand(
                 createGameResponse.Id,
@@ -161,7 +165,7 @@ public sealed class GetOrderQueryHandlerTests(PostgreSqlFixture postgreSqlFixtur
         CancellationToken cancellationToken
     )
     {
-        var handler = new CreatePromotionCommandHandler(context);
+        var handler = new CreatePromotionCommandHandler(context, TestCache.Create());
         return await handler.HandleAsync(
             new CreatePromotionCommand(gameId.Value, discount, startsAt, endsAt),
             cancellationToken

@@ -20,7 +20,7 @@ public sealed class CreatePromotionCommandHandlerTests(PostgreSqlFixture postgre
         // Arrange
         await using var context = _database.CreateDbContext();
         var gameId = await CreateGameAsync(context, TestContext.Current.CancellationToken);
-        var handler = new CreatePromotionCommandHandler(context);
+        var handler = new CreatePromotionCommandHandler(context, TestCache.Create());
         var startsAt = new DateTimeOffset(2026, 4, 1, 0, 0, 0, TimeSpan.Zero);
         var endsAt = new DateTimeOffset(2026, 4, 15, 0, 0, 0, TimeSpan.Zero);
 
@@ -46,7 +46,7 @@ public sealed class CreatePromotionCommandHandlerTests(PostgreSqlFixture postgre
         // Arrange
         await using var context = _database.CreateDbContext();
         var gameId = await CreateGameAsync(context, TestContext.Current.CancellationToken);
-        var handler = new CreatePromotionCommandHandler(context);
+        var handler = new CreatePromotionCommandHandler(context, TestCache.Create());
         var startsAt = new DateTimeOffset(2026, 4, 1, 0, 0, 0, TimeSpan.Zero);
         var endsAt = new DateTimeOffset(2026, 4, 15, 0, 0, 0, TimeSpan.Zero);
 
@@ -77,7 +77,7 @@ public sealed class CreatePromotionCommandHandlerTests(PostgreSqlFixture postgre
         // Arrange
         await using var context = _database.CreateDbContext();
         var missingGameId = Guid.NewGuid();
-        var handler = new CreatePromotionCommandHandler(context);
+        var handler = new CreatePromotionCommandHandler(context, TestCache.Create());
 
         // Act
         var exception = await Should.ThrowAsync<NotFoundException>(() =>
@@ -111,7 +111,7 @@ public sealed class CreatePromotionCommandHandlerTests(PostgreSqlFixture postgre
             new DateTimeOffset(2026, 4, 10, 0, 0, 0, TimeSpan.Zero),
             TestContext.Current.CancellationToken
         );
-        var handler = new CreatePromotionCommandHandler(context);
+        var handler = new CreatePromotionCommandHandler(context, TestCache.Create());
 
         // Act
         var exception = await Should.ThrowAsync<ConflictException>(() =>
@@ -137,7 +137,7 @@ public sealed class CreatePromotionCommandHandlerTests(PostgreSqlFixture postgre
 
     private static async Task<GameId> CreateGameAsync(CatalogDbContext context, CancellationToken cancellationToken)
     {
-        var handler = new CreateGameCommandHandler(context);
+        var handler = new CreateGameCommandHandler(context, TestCache.Create());
         var response = await handler.HandleAsync(
             new CreateGameCommand("Portal", "A puzzle platformer.", 19.99m, Currency.Usd),
             cancellationToken
@@ -155,7 +155,7 @@ public sealed class CreatePromotionCommandHandlerTests(PostgreSqlFixture postgre
         CancellationToken cancellationToken
     )
     {
-        var handler = new CreatePromotionCommandHandler(context);
+        var handler = new CreatePromotionCommandHandler(context, TestCache.Create());
         return await handler.HandleAsync(
             new CreatePromotionCommand(gameId.Value, discount, startsAt, endsAt),
             cancellationToken

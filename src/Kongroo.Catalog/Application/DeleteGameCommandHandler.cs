@@ -2,10 +2,11 @@ using Kongroo.BuildingBlocks.Domain.Exceptions;
 using Kongroo.Catalog.Domain;
 using Kongroo.Catalog.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Kongroo.Catalog.Application;
 
-public sealed class DeleteGameCommandHandler(CatalogDbContext context)
+public sealed class DeleteGameCommandHandler(CatalogDbContext context, HybridCache cache)
 {
     public async Task HandleAsync(DeleteGameCommand command, CancellationToken cancellationToken)
     {
@@ -17,5 +18,6 @@ public sealed class DeleteGameCommandHandler(CatalogDbContext context)
 
         context.Games.Remove(game);
         await context.SaveChangesAsync(cancellationToken);
+        await cache.RemoveByTagAsync(GamesCache.Tag, cancellationToken);
     }
 }

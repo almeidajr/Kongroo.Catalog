@@ -159,13 +159,13 @@ public sealed class ApplyPaymentResultCommandHandlerTests(PostgreSqlFixture post
         CancellationToken cancellationToken
     )
     {
-        var createHandler = new CreateGameCommandHandler(context);
+        var createHandler = new CreateGameCommandHandler(context, TestCache.Create());
         var created = await createHandler.HandleAsync(
             new CreateGameCommand(title, $"{title} description.", priceAmount, Currency.Usd),
             cancellationToken
         );
 
-        var updateHandler = new UpdateGameCommandHandler(context, new FakeTimeProvider(PlacedAt));
+        var updateHandler = new UpdateGameCommandHandler(context, new FakeTimeProvider(PlacedAt), TestCache.Create());
         await updateHandler.HandleAsync(
             new UpdateGameCommand(
                 created.Id,

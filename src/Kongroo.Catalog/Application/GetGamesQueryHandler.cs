@@ -1,12 +1,26 @@
 using Kongroo.Catalog.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Kongroo.Catalog.Application;
 
-public sealed class GetGamesQueryHandler(CatalogDbContext context, TimeProvider timeProvider)
+public sealed class GetGamesQueryHandler(CatalogDbContext context, TimeProvider timeProvider, HybridCache cache)
 {
     public async Task<IReadOnlyList<GetGameResponse>> HandleAsync(
         GetGamesQuery query,
+        CancellationToken cancellationToken
+    ) =>
+        await cache.GetOrCreateAsync(
+            GamesCache.ListKey,
+            (context, timeProvider),
+            static (state, token) => LoadAsync(state.context, state.timeProvider, token),
+            tags: [GamesCache.Tag],
+            cancellationToken: cancellationToken
+        );
+
+    private static async ValueTask<IReadOnlyList<GetGameResponse>> LoadAsync(
+        CatalogDbContext context,
+        TimeProvider timeProvider,
         CancellationToken cancellationToken
     )
     {
