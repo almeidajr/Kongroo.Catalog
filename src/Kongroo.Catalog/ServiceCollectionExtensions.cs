@@ -33,6 +33,8 @@ public static class ServiceCollectionExtensions
             services.AddScoped<PlaceOrderCommandHandler>();
             services.AddScoped<UpdateGameCommandHandler>();
             services.AddScoped<DeleteGameCommandHandler>();
+            services.AddScoped<SubmitReviewCommandHandler>();
+            services.AddScoped<GetGameReviewsQueryHandler>();
 
             services.AddScoped<ApplyPaymentResultCommandHandler>();
 

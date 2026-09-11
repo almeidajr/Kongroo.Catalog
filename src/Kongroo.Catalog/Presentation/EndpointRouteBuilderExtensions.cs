@@ -85,6 +85,30 @@ public static class EndpointRouteBuilderExtensions
                 .WithSummary("Delete a game")
                 .WithDescription("Deletes an existing game from the catalog.");
 
+            gamesGroup
+                .MapPost("/{gameId:guid}/reviews", SubmitReviewAsync)
+                .RequireAuthorization()
+                .ProducesValidationProblem()
+                .ProducesProblem(StatusCodes.Status401Unauthorized)
+                .ProducesProblem(StatusCodes.Status404NotFound)
+                .ProducesProblem(StatusCodes.Status409Conflict)
+                .ProducesProblem(StatusCodes.Status500InternalServerError)
+                .WithName("SubmitReview")
+                .WithSummary("Submit a review")
+                .WithDescription(
+                    "Submits the authenticated user's review for a game. One review per customer per game."
+                );
+
+            gamesGroup
+                .MapGet("/{gameId:guid}/reviews", GetGameReviewsAsync)
+                .RequireAuthorization()
+                .ProducesProblem(StatusCodes.Status401Unauthorized)
+                .ProducesProblem(StatusCodes.Status404NotFound)
+                .ProducesProblem(StatusCodes.Status500InternalServerError)
+                .WithName("GetGameReviews")
+                .WithSummary("Get game reviews")
+                .WithDescription("Returns the average rating, review count and the most recent reviews of a game.");
+
             ordersGroup
                 .MapGet("/", GetOrdersAsync)
                 .RequireAuthorization()
@@ -219,6 +243,38 @@ public static class EndpointRouteBuilderExtensions
         await handler.HandleAsync(command, cancellationToken);
 
         return TypedResults.NoContent();
+    }
+
+    private static async Task<CreatedAtRoute<GetReviewResponse>> SubmitReviewAsync(
+        [Description("Unique identifier of the game to review.")] Guid gameId,
+        SubmitReviewRequest request,
+        ClaimsPrincipal user,
+        SubmitReviewCommandHandler handler,
+        CancellationToken cancellationToken
+    )
+    {
+        var command = new SubmitReviewCommand(
+            gameId,
+            user.GetUserId(),
+            user.GetCustomerName(),
+            request.Rating,
+            request.Text
+        );
+        var response = await handler.HandleAsync(command, cancellationToken);
+
+        return TypedResults.CreatedAtRoute(response, "GetGameReviews", new { gameId });
+    }
+
+    private static async Task<Ok<GetGameReviewsResponse>> GetGameReviewsAsync(
+        [Description("Unique identifier of the reviewed game.")] Guid gameId,
+        GetGameReviewsQueryHandler handler,
+        CancellationToken cancellationToken
+    )
+    {
+        var query = new GetGameReviewsQuery(gameId);
+        var response = await handler.HandleAsync(query, cancellationToken);
+
+        return TypedResults.Ok(response);
     }
 
     private static async Task<Ok<IReadOnlyList<GetOrderResponse>>> GetOrdersAsync(
