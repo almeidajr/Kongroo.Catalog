@@ -9,6 +9,9 @@ namespace Kongroo.Catalog.Application;
 public sealed class GetGameQueryHandler(CatalogDbContext context, TimeProvider timeProvider, HybridCache cache)
 {
     public async Task<GetGameResponse> HandleAsync(GetGameQuery query, CancellationToken cancellationToken) =>
+        // ponytail: the request-scoped DbContext is shared with stampede-joined callers; if the
+        // first caller aborts mid-query they get one failed request. Switch to IServiceScopeFactory
+        // if it ever shows up.
         await cache.GetOrCreateAsync(
             GamesCache.GameKey(query.GameId),
             (context, timeProvider, query),

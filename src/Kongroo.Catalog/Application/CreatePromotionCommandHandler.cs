@@ -26,7 +26,7 @@ public sealed class CreatePromotionCommandHandler(CatalogDbContext context, Hybr
         );
 
         await context.SaveChangesAsync(cancellationToken);
-        await cache.RemoveByTagAsync(GamesCache.Tag, cancellationToken);
+        await cache.RemoveByTagAsync(GamesCache.Tag, CancellationToken.None);
 
         return new GetPromotionResponse(
             promotion.Id.Value,

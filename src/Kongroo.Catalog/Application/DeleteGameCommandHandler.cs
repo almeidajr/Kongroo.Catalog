@@ -18,6 +18,6 @@ public sealed class DeleteGameCommandHandler(CatalogDbContext context, HybridCac
 
         context.Games.Remove(game);
         await context.SaveChangesAsync(cancellationToken);
-        await cache.RemoveByTagAsync(GamesCache.Tag, cancellationToken);
+        await cache.RemoveByTagAsync(GamesCache.Tag, CancellationToken.None);
     }
 }

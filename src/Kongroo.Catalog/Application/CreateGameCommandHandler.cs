@@ -16,7 +16,7 @@ public sealed class CreateGameCommandHandler(CatalogDbContext context, HybridCac
 
         context.Games.Add(game);
         await context.SaveChangesAsync(cancellationToken);
-        await cache.RemoveByTagAsync(GamesCache.Tag, cancellationToken);
+        await cache.RemoveByTagAsync(GamesCache.Tag, CancellationToken.None);
 
         return new CreateGameResponse(
             game.Id.Value,

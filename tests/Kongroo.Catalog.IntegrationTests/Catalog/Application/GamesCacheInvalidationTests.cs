@@ -1,3 +1,4 @@
+using Kongroo.BuildingBlocks.Domain.Exceptions;
 using Kongroo.Catalog.Application;
 using Kongroo.Catalog.Domain;
 using Kongroo.Catalog.Infrastructure;
@@ -77,6 +78,72 @@ public sealed class GamesCacheInvalidationTests(PostgreSqlFixture postgreSqlFixt
 
         // Assert
         after.Title.ShouldBe("Portal 2");
+    }
+
+    [Fact]
+    public async Task HandleAsync_WhenCreateGameCommandSucceeds_ShouldEvictTheGamesList()
+    {
+        // Arrange — cache the (empty) list before the game is created
+        await using var context = _database.CreateDbContext();
+        var cache = CreateRedisBackedCache($"tests:{Guid.NewGuid():N}:");
+        var reader = new GetGamesQueryHandler(context, new FakeTimeProvider(ReadAt), cache);
+        var before = await reader.HandleAsync(new GetGamesQuery(), TestContext.Current.CancellationToken);
+        before.ShouldBeEmpty();
+
+        // Act
+        var gameId = await CreateGameAsync(context, cache, TestContext.Current.CancellationToken);
+        context.ChangeTracker.Clear();
+        var after = await reader.HandleAsync(new GetGamesQuery(), TestContext.Current.CancellationToken);
+
+        // Assert
+        after.ShouldContain(game => game.Id == gameId.Value);
+    }
+
+    [Fact]
+    public async Task HandleAsync_WhenDeleteGameCommandSucceeds_ShouldEvictTheGame()
+    {
+        // Arrange
+        await using var context = _database.CreateDbContext();
+        var cache = CreateRedisBackedCache($"tests:{Guid.NewGuid():N}:");
+        var gameId = await CreateGameAsync(context, cache, TestContext.Current.CancellationToken);
+        var reader = new GetGameQueryHandler(context, new FakeTimeProvider(ReadAt), cache);
+        var before = await reader.HandleAsync(new GetGameQuery(gameId.Value), TestContext.Current.CancellationToken);
+        before.Title.ShouldBe("Portal");
+
+        var deleter = new DeleteGameCommandHandler(context, cache);
+        await deleter.HandleAsync(new DeleteGameCommand(gameId.Value), TestContext.Current.CancellationToken);
+        context.ChangeTracker.Clear();
+
+        // Act & Assert
+        await Should.ThrowAsync<NotFoundException>(() =>
+            reader.HandleAsync(new GetGameQuery(gameId.Value), TestContext.Current.CancellationToken)
+        );
+    }
+
+    [Fact]
+    public async Task HandleAsync_WhenCreatePromotionCommandSucceeds_ShouldEvictTheGame()
+    {
+        // Arrange
+        await using var context = _database.CreateDbContext();
+        var cache = CreateRedisBackedCache($"tests:{Guid.NewGuid():N}:");
+        var gameId = await CreateGameAsync(context, cache, TestContext.Current.CancellationToken);
+        var reader = new GetGameQueryHandler(context, new FakeTimeProvider(ReadAt), cache);
+        var before = await reader.HandleAsync(new GetGameQuery(gameId.Value), TestContext.Current.CancellationToken);
+        before.ActivePromotion.ShouldBeNull();
+
+        var promoter = new CreatePromotionCommandHandler(context, cache);
+        await promoter.HandleAsync(
+            new CreatePromotionCommand(gameId.Value, 25m, ReadAt.AddHours(-1), ReadAt.AddHours(1)),
+            TestContext.Current.CancellationToken
+        );
+        context.ChangeTracker.Clear();
+
+        // Act
+        var after = await reader.HandleAsync(new GetGameQuery(gameId.Value), TestContext.Current.CancellationToken);
+
+        // Assert
+        after.ActivePromotion.ShouldNotBeNull();
+        after.ActivePromotion.Discount.ShouldBe(25m);
     }
 
     public async ValueTask InitializeAsync() => await _database.ResetAsync(TestContext.Current.CancellationToken);
