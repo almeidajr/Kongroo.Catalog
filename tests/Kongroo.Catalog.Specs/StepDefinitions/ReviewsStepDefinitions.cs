@@ -23,9 +23,16 @@ public sealed class ReviewsStepDefinitions(CatalogApiDriver catalogApiDriver, Ap
         scenarioContext.Authenticate(SpecsJwt.CreateToken(playerId, "kongroo-player", "User"));
     }
 
+    [Given("no access token")]
+    public void GivenNoAccessToken() => scenarioContext.ClearAuthentication();
+
     [When("the player submits a {int}-star review")]
     public async Task WhenThePlayerSubmitsAStarReview(int rating) =>
         await catalogApiDriver.SubmitReviewAsync(scenarioContext.GameId, rating, "Great.");
+
+    [When("the player submits a review with a {int}-character text")]
+    public async Task WhenThePlayerSubmitsAReviewWithACharacterText(int length) =>
+        await catalogApiDriver.SubmitReviewAsync(scenarioContext.GameId, 5, new string('a', length));
 
     [When("the game reviews are requested")]
     public async Task WhenTheGameReviewsAreRequested() =>

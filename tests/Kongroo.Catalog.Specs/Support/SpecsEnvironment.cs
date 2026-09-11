@@ -1,4 +1,5 @@
 using System.Net;
+using Kongroo.Catalog.Application;
 using Kongroo.Catalog.Infrastructure;
 using Microsoft.Extensions.Caching.Hybrid;
 using MongoDB.Driver;
@@ -100,15 +101,11 @@ public static class SpecsEnvironment
         await using var command = new NpgsqlCommand(truncateSql, connection);
         await command.ExecuteNonQueryAsync(cancellationToken);
 
-        var mongoConnectionString =
-            _mongo?.GetConnectionString()
-            ?? throw new InvalidOperationException("The specs MongoDB has not been started.");
-        await new MongoClient(mongoConnectionString)
-            .GetDatabase("kongroo_catalog_specs")
-            .GetCollection<ReviewDocument>(ReviewDocument.CollectionName)
+        await Factory
+            .Services.GetRequiredService<IMongoCollection<ReviewDocument>>()
             .DeleteManyAsync(FilterDefinition<ReviewDocument>.Empty, cancellationToken);
 
-        await Factory.Services.GetRequiredService<HybridCache>().RemoveByTagAsync("games", cancellationToken);
+        await Factory.Services.GetRequiredService<HybridCache>().RemoveByTagAsync(GamesCache.Tag, cancellationToken);
     }
 
     public static async Task StopAsync()

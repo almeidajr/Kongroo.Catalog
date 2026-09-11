@@ -25,6 +25,8 @@ public sealed class ApiScenarioContext : IDisposable
     public void Authenticate(string accessToken) =>
         Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
+    public void ClearAuthentication() => Client.DefaultRequestHeaders.Authorization = null;
+
     public void Dispose()
     {
         LastResponse?.Dispose();
