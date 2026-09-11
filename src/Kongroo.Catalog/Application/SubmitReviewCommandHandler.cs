@@ -39,7 +39,8 @@ public sealed class SubmitReviewCommandHandler(
         {
             await reviews.InsertOneAsync(document, cancellationToken: cancellationToken);
         }
-        catch (MongoWriteException exception) when (exception.WriteError.Category == ServerErrorCategory.DuplicateKey)
+        catch (MongoWriteException exception)
+            when (exception.WriteError is { Category: ServerErrorCategory.DuplicateKey })
         {
             throw new ConflictException(ResourceName, $"customer already reviewed game '{command.GameId}'", exception);
         }
