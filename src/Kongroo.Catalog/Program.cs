@@ -9,11 +9,14 @@ using Kongroo.Catalog.Infrastructure;
 using Kongroo.Catalog.Presentation;
 using Kongroo.Catalog.Presentation.Authorization;
 using Kongroo.Catalog.Presentation.OpenApi;
+using MassTransit.Monitoring;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using Scalar.AspNetCore;
 using Serilog;
 
@@ -90,6 +93,18 @@ builder
     .Services.AddAuthorizationBuilder()
     .AddPolicy(AuthorizationPolicies.AdminOnly, policy => policy.RequireRole("Admin"));
 
+builder
+    .Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService(builder.Environment.ApplicationName))
+    .WithMetrics(static metrics =>
+        metrics
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddMeter(InstrumentationOptions.MeterName)
+            .AddPrometheusExporter()
+    );
+
 builder.Services.AddCatalogModule(builder.Configuration);
 
 var app = builder.Build();
@@ -104,6 +119,7 @@ app.MapHealthChecks("health", new HealthCheckOptions { ResponseWriter = UIRespon
 app.MapHealthChecks("health/live", new HealthCheckOptions { Predicate = _ => false });
 app.MapHealthChecks("health/ready", new HealthCheckOptions { Predicate = check => check.Tags.Contains("ready") });
 app.MapCatalogEndpoints();
+app.MapPrometheusScrapingEndpoint();
 
 app.MapOpenApi();
 app.MapScalarApiReference();
