@@ -8,7 +8,9 @@ public sealed class KongrooWebApplicationFactory(
     string rabbitMqHost,
     int rabbitMqPort,
     string rabbitMqUsername,
-    string rabbitMqPassword
+    string rabbitMqPassword,
+    string mongoConnectionString,
+    string redisConnectionString
 ) : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -25,6 +27,9 @@ public sealed class KongrooWebApplicationFactory(
                     ["RabbitMq:Port"] = rabbitMqPort.ToString(CultureInfo.InvariantCulture),
                     ["RabbitMq:User"] = rabbitMqUsername,
                     ["RabbitMq:Pass"] = rabbitMqPassword,
+                    ["Mongo:ConnectionString"] = mongoConnectionString,
+                    ["Mongo:Database"] = "kongroo_catalog_specs",
+                    ["ConnectionStrings:Redis"] = redisConnectionString,
                     ["Jwt:Issuer"] = SpecsJwt.Issuer,
                     ["Jwt:Audience"] = SpecsJwt.Audience,
                     ["Jwt:SigningKey"] = SpecsJwt.SigningKey,

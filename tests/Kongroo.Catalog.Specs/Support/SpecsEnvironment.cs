@@ -1,7 +1,12 @@
 using System.Net;
+using Kongroo.Catalog.Infrastructure;
+using Microsoft.Extensions.Caching.Hybrid;
+using MongoDB.Driver;
 using Npgsql;
+using Testcontainers.MongoDb;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
+using Testcontainers.Redis;
 
 namespace Kongroo.Catalog.Specs.Support;
 
@@ -11,10 +16,14 @@ public static class SpecsEnvironment
     private const string RabbitMqImage = "rabbitmq:4-management";
     private const string RabbitMqUsername = "kongroo";
     private const string RabbitMqPassword = "development";
+    private const string MongoDbImage = "mongo:8.0";
+    private const string RedisImage = "redis:8.2-alpine";
 
     private static readonly SemaphoreSlim Gate = new(1, 1);
     private static PostgreSqlContainer? _database;
     private static RabbitMqContainer? _broker;
+    private static MongoDbContainer? _mongo;
+    private static RedisContainer? _redis;
     private static KongrooWebApplicationFactory? _factory;
 
     public static KongrooWebApplicationFactory Factory =>
@@ -44,15 +53,24 @@ public static class SpecsEnvironment
                 .WithUsername(RabbitMqUsername)
                 .WithPassword(RabbitMqPassword)
                 .Build();
+            _mongo = new MongoDbBuilder(MongoDbImage).Build();
+            _redis = new RedisBuilder(RedisImage).Build();
 
-            await Task.WhenAll(_database.StartAsync(cancellationToken), _broker.StartAsync(cancellationToken));
+            await Task.WhenAll(
+                _database.StartAsync(cancellationToken),
+                _broker.StartAsync(cancellationToken),
+                _mongo.StartAsync(cancellationToken),
+                _redis.StartAsync(cancellationToken)
+            );
 
             _factory = new KongrooWebApplicationFactory(
                 _database.GetConnectionString(),
                 _broker.Hostname,
                 _broker.GetMappedPublicPort(5672),
                 RabbitMqUsername,
-                RabbitMqPassword
+                RabbitMqPassword,
+                _mongo.GetConnectionString(),
+                _redis.GetConnectionString()
             );
 
             await WaitForHealthyAsync(cancellationToken);
@@ -81,6 +99,16 @@ public static class SpecsEnvironment
 
         await using var command = new NpgsqlCommand(truncateSql, connection);
         await command.ExecuteNonQueryAsync(cancellationToken);
+
+        var mongoConnectionString =
+            _mongo?.GetConnectionString()
+            ?? throw new InvalidOperationException("The specs MongoDB has not been started.");
+        await new MongoClient(mongoConnectionString)
+            .GetDatabase("kongroo_catalog_specs")
+            .GetCollection<ReviewDocument>(ReviewDocument.CollectionName)
+            .DeleteManyAsync(FilterDefinition<ReviewDocument>.Empty, cancellationToken);
+
+        await Factory.Services.GetRequiredService<HybridCache>().RemoveByTagAsync("games", cancellationToken);
     }
 
     public static async Task StopAsync()
@@ -95,6 +123,18 @@ public static class SpecsEnvironment
         {
             await _broker.DisposeAsync();
             _broker = null;
+        }
+
+        if (_mongo is not null)
+        {
+            await _mongo.DisposeAsync();
+            _mongo = null;
+        }
+
+        if (_redis is not null)
+        {
+            await _redis.DisposeAsync();
+            _redis = null;
         }
 
         if (_database is not null)

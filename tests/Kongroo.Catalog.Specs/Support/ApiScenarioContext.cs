@@ -14,6 +14,8 @@ public sealed class ApiScenarioContext : IDisposable
 
     public HttpResponseMessage? LastResponse { get; private set; }
 
+    public Guid GameId { get; set; }
+
     public void SetLastResponse(HttpResponseMessage response)
     {
         LastResponse?.Dispose();

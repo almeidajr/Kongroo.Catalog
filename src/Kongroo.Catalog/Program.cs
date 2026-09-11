@@ -61,7 +61,7 @@ builder
         name: "mongodb",
         tags: ["ready"]
     )
-    .AddRedis(builder.Configuration.GetRequiredConnectionString("Redis"), name: "redis", tags: ["ready"]);
+    .AddRedis(_ => builder.Configuration.GetRequiredConnectionString("Redis"), name: "redis", tags: ["ready"]);
 
 builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
