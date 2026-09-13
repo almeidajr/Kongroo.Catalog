@@ -22,8 +22,18 @@ Game catalog and user library microservice for FIAP Cloud Games.
 
 ## Messaging
 
+```mermaid
+flowchart LR
+    client([Client]) -->|POST /orders| catalog[Catalog API]
+    catalog -.->|OrderPlacedIntegrationEvent| placed{{kongroo-order-placed}}
+    placed -.-> payments[Payments API]
+    payments -.->|PaymentProcessedIntegrationEvent| processed{{kongroo-payment-processed}}
+    processed -.-> catalog
+    catalog --> settle[Order marked Paid or Rejected<br/>Ownership granted when approved]
+```
+
 When an authenticated user places an order, Catalog publishes `OrderPlacedIntegrationEvent`
-through RabbitMQ. The event includes the order id, `CustomerId`, customer contact fields,
+through MassTransit's transactional outbox. The event includes the order id, `CustomerId`, customer contact fields,
 the order total, `Currency`, and `Lines[]` entries with each purchased `GameId` and
 `UnitPrice`.
 
@@ -71,6 +81,9 @@ dotnet run --project src/Kongroo.Catalog
 ```
 
 ## Running Tests
+
+Requires Docker — integration tests spin up PostgreSQL, MongoDB and Redis via Testcontainers; the BDD
+specs add RabbitMQ. Unit tests need no Docker.
 
 ```bash
 dotnet test
