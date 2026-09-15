@@ -16,8 +16,6 @@ public sealed class DeleteGameCommandHandler(CatalogDbContext context, HybridCac
                 .SingleOrDefaultAsync(cancellationToken)
             ?? throw new NotFoundException(nameof(Game), $"identifier '{command.GameId}'");
 
-        // ponytail: reviews of a deleted game stay in MongoDB, unreachable through the API; cascade
-        // here if it ever matters.
         context.Games.Remove(game);
         await context.SaveChangesAsync(cancellationToken);
         await cache.RemoveByTagAsync(GamesCache.Tag, CancellationToken.None);
