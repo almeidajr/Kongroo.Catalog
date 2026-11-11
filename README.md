@@ -61,7 +61,7 @@ and `kongroo-payment-processed`.
 | `Mongo__ConnectionString`                                           | Secret                   | MongoDB connection string (reviews)                          |
 | `Mongo__Database`                                                   | ConfigMap                 | MongoDB database name (`kongroo_catalog`)                    |
 | `ConnectionStrings__Redis`                                          | Secret                   | Redis endpoint for HybridCache                               |
-| `Search__Uri`                                                       | ConfigMap                 | Elasticsearch endpoint for Game Search (e.g. `http://elasticsearch:9200`) |
+| `Search__Uri`                                                       | ConfigMap                 | Elasticsearch endpoint (e.g. `http://elasticsearch:9200`)    |
 | `Search__Username`                                                  | ConfigMap                 | Elasticsearch user                                           |
 | `Search__Password`                                                  | Secret                   | Elasticsearch password                                       |
 
@@ -78,12 +78,12 @@ tier (5 min) and an in-process tier (1 min). Every game or promotion write evict
 
 ## Running Locally
 
-Generate the local credentials (also sets this API's user-secrets) and start the datastores from
-`Kongroo.Orchestration`, then run the service:
+Generate the local credentials (also sets this API's user-secrets), start the datastores, then run
+the service:
 
 ```powershell
-./scripts/new-secrets.ps1 -SkipKubernetes              # from Kongroo.Orchestration
-docker compose up postgres rabbitmq mongodb redis -d   # from Kongroo.Orchestration
+./scripts/new-secrets.ps1 -SkipKubernetes                            # from Kongroo.Orchestration
+docker compose up postgres rabbitmq mongodb redis elasticsearch -d   # from Kongroo.Orchestration
 dotnet run --project src/Kongroo.Catalog
 ```
 
