@@ -33,24 +33,54 @@ public sealed class SearchStepDefinitions(CatalogApiDriver catalogApiDriver, Api
     [Then("searching for {string} eventually returns the game as the first hit")]
     public async Task ThenSearchingEventuallyReturnsTheGameAsTheFirstHit(string query)
     {
-        var deadline = DateTimeOffset.UtcNow + SearchTimeout;
-        var firstHitId = await SearchFirstHitIdAsync(query);
-        while (firstHitId != scenarioContext.GameId && DateTimeOffset.UtcNow < deadline)
-        {
-            await Task.Delay(PollInterval);
-            firstHitId = await SearchFirstHitIdAsync(query);
-        }
+        var hitIds = await PollSearchUntilAsync(
+            query,
+            hitIds => hitIds is [var firstHitId, ..] && firstHitId == scenarioContext.GameId
+        );
 
-        firstHitId.ShouldBe(scenarioContext.GameId);
+        hitIds.ShouldNotBeEmpty();
+        hitIds[0].ShouldBe(scenarioContext.GameId);
     }
 
-    private async Task<Guid?> SearchFirstHitIdAsync(string query)
+    [When("the game is deleted")]
+    public async Task WhenTheGameIsDeleted()
+    {
+        scenarioContext.Authenticate(SpecsJwt.CreateToken(Guid.NewGuid(), "kongroo-admin", "Admin"));
+        await catalogApiDriver.DeleteGameAsync(scenarioContext.GameId);
+        scenarioContext.LastResponse.ShouldNotBeNull().StatusCode.ShouldBe(HttpStatusCode.NoContent);
+    }
+
+    [Then("searching for {string} eventually no longer returns the game")]
+    public async Task ThenSearchingEventuallyNoLongerReturnsTheGame(string query)
+    {
+        var hitIds = await PollSearchUntilAsync(query, hitIds => !hitIds.Contains(scenarioContext.GameId));
+
+        hitIds.ShouldNotContain(scenarioContext.GameId);
+    }
+
+    private async Task<IReadOnlyList<Guid>> PollSearchUntilAsync(
+        string query,
+        Func<IReadOnlyList<Guid>, bool> isSatisfied
+    )
+    {
+        var deadline = DateTimeOffset.UtcNow + SearchTimeout;
+        var hitIds = await SearchHitIdsAsync(query);
+        while (!isSatisfied(hitIds) && DateTimeOffset.UtcNow < deadline)
+        {
+            await Task.Delay(PollInterval);
+            hitIds = await SearchHitIdsAsync(query);
+        }
+
+        return hitIds;
+    }
+
+    private async Task<IReadOnlyList<Guid>> SearchHitIdsAsync(string query)
     {
         await catalogApiDriver.SearchAsync(query);
         var response = scenarioContext.LastResponse.ShouldNotBeNull();
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var hits = await response.Content.ReadFromJsonAsync<IReadOnlyList<SearchHit>>();
 
-        return hits.ShouldNotBeNull() is [var firstHit, ..] ? firstHit.Id : null;
+        return [.. hits.ShouldNotBeNull().Select(static hit => hit.Id)];
     }
 }

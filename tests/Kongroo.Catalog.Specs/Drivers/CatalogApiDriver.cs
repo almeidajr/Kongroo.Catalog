@@ -53,6 +53,12 @@ public sealed class CatalogApiDriver(ApiScenarioContext scenarioContext)
         scenarioContext.SetLastResponse(response);
     }
 
+    public async Task DeleteGameAsync(Guid gameId)
+    {
+        var response = await scenarioContext.Client.DeleteAsync($"/games/{gameId}");
+        scenarioContext.SetLastResponse(response);
+    }
+
     public async Task SearchAsync(string query)
     {
         var response = await scenarioContext.Client.GetAsync($"/search?q={Uri.EscapeDataString(query)}");

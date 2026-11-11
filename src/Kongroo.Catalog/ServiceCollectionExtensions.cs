@@ -11,6 +11,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using Polly;
+using Polly.Retry;
 
 namespace Kongroo.Catalog;
 
@@ -105,12 +107,41 @@ public static class ServiceCollectionExtensions
             {
                 var gameSearchOptions = provider.GetRequiredService<IOptions<GameSearchOptions>>().Value;
 
+                // Retries belong to the Polly pipelines; transport retries would multiply them.
                 return new ElasticsearchClient(
-                    new ElasticsearchClientSettings(gameSearchOptions.Uri!).Authentication(
-                        new BasicAuthentication(gameSearchOptions.Username, gameSearchOptions.Password)
-                    )
+                    new ElasticsearchClientSettings(gameSearchOptions.Uri!)
+                        .Authentication(new BasicAuthentication(gameSearchOptions.Username, gameSearchOptions.Password))
+                        .MaximumRetries(0)
                 );
             });
+            services.AddResiliencePipeline(
+                GameSearchPipelines.Indexing,
+                static pipeline =>
+                    pipeline.AddRetry(
+                        new RetryStrategyOptions
+                        {
+                            BackoffType = DelayBackoffType.Exponential,
+                            UseJitter = true,
+                            // Jittered delays add up to about two minutes (median) before the message goes to _error.
+                            Delay = TimeSpan.FromSeconds(2),
+                            MaxRetryAttempts = 7,
+                        }
+                    )
+            );
+            services.AddResiliencePipeline(
+                GameSearchPipelines.IndexSetup,
+                static pipeline =>
+                    pipeline.AddRetry(
+                        new RetryStrategyOptions
+                        {
+                            BackoffType = DelayBackoffType.Exponential,
+                            UseJitter = true,
+                            Delay = TimeSpan.FromSeconds(1),
+                            MaxDelay = TimeSpan.FromSeconds(30),
+                            MaxRetryAttempts = int.MaxValue,
+                        }
+                    )
+            );
             services.AddHostedService<GameSearchIndexInitializer>();
         }
 

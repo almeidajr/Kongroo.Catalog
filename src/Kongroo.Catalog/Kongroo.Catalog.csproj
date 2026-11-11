@@ -33,6 +33,7 @@
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Common" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.ResourceUtilization" />
+    <PackageReference Include="Microsoft.Extensions.Resilience" />
     <PackageReference Include="MongoDB.Driver" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" />

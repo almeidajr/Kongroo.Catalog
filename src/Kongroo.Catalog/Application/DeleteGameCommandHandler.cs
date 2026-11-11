@@ -1,12 +1,17 @@
 using Kongroo.BuildingBlocks.Domain.Exceptions;
 using Kongroo.Catalog.Domain;
 using Kongroo.Catalog.Infrastructure;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Kongroo.Catalog.Application;
 
-public sealed class DeleteGameCommandHandler(CatalogDbContext context, HybridCache cache)
+public sealed class DeleteGameCommandHandler(
+    CatalogDbContext context,
+    HybridCache cache,
+    IPublishEndpoint publishEndpoint
+)
 {
     public async Task HandleAsync(DeleteGameCommand command, CancellationToken cancellationToken)
     {
@@ -17,6 +22,7 @@ public sealed class DeleteGameCommandHandler(CatalogDbContext context, HybridCac
             ?? throw new NotFoundException(nameof(Game), $"identifier '{command.GameId}'");
 
         context.Games.Remove(game);
+        await publishEndpoint.Publish(new GameIndexRequested(game.Id.Value), cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
         await cache.RemoveByTagAsync(GamesCache.Tag, CancellationToken.None);
     }

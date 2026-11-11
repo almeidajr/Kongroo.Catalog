@@ -117,7 +117,7 @@ public sealed class GamesCacheInvalidationTests(PostgreSqlFixture postgreSqlFixt
         var before = await reader.HandleAsync(new GetGameQuery(gameId.Value), TestContext.Current.CancellationToken);
         before.Title.ShouldBe("Portal");
 
-        var deleter = new DeleteGameCommandHandler(context, cache);
+        var deleter = new DeleteGameCommandHandler(context, cache, Substitute.For<IPublishEndpoint>());
         await deleter.HandleAsync(new DeleteGameCommand(gameId.Value), TestContext.Current.CancellationToken);
         context.ChangeTracker.Clear();
 
