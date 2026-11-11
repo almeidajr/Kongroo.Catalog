@@ -107,11 +107,12 @@ public static class ServiceCollectionExtensions
             {
                 var gameSearchOptions = provider.GetRequiredService<IOptions<GameSearchOptions>>().Value;
 
-                // Retries belong to the Polly pipelines; transport retries would multiply them.
+                // Retries belong to the Polly pipelines; transport retries would multiply them, and a short timeout keeps a hung cluster from stretching their window.
                 return new ElasticsearchClient(
                     new ElasticsearchClientSettings(gameSearchOptions.Uri!)
                         .Authentication(new BasicAuthentication(gameSearchOptions.Username, gameSearchOptions.Password))
                         .MaximumRetries(0)
+                        .RequestTimeout(TimeSpan.FromSeconds(10))
                 );
             });
             services.AddResiliencePipeline(
