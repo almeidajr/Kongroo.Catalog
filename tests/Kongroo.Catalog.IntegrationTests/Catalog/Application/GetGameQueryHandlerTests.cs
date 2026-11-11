@@ -3,7 +3,9 @@ using Kongroo.Catalog.Application;
 using Kongroo.Catalog.Domain;
 using Kongroo.Catalog.Infrastructure;
 using Kongroo.Catalog.IntegrationTests.Fixtures;
+using MassTransit;
 using Microsoft.Extensions.Time.Testing;
+using NSubstitute;
 using Shouldly;
 
 namespace Kongroo.Catalog.IntegrationTests.Catalog.Application;
@@ -115,7 +117,7 @@ public sealed class GetGameQueryHandlerTests(PostgreSqlFixture postgreSqlFixture
 
     private static async Task<GameId> CreateGameAsync(CatalogDbContext context, CancellationToken cancellationToken)
     {
-        var handler = new CreateGameCommandHandler(context, TestCache.Create());
+        var handler = new CreateGameCommandHandler(context, TestCache.Create(), Substitute.For<IPublishEndpoint>());
         var response = await handler.HandleAsync(
             new CreateGameCommand("Portal", "A puzzle platformer.", 19.99m, Currency.Usd),
             cancellationToken

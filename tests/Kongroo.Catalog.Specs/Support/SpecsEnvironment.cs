@@ -1,10 +1,12 @@
 using System.Net;
 using System.Security.Cryptography;
+using DotNet.Testcontainers.Builders;
 using Kongroo.Catalog.Application;
 using Kongroo.Catalog.Infrastructure;
 using Microsoft.Extensions.Caching.Hybrid;
 using MongoDB.Driver;
 using Npgsql;
+using Testcontainers.Elasticsearch;
 using Testcontainers.MongoDb;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
@@ -19,13 +21,18 @@ public static class SpecsEnvironment
     private const string RabbitMqUsername = "kongroo";
     private const string MongoDbImage = "mongo:8.0";
     private const string RedisImage = "redis:8.2-alpine";
+    private const string ElasticsearchImage = "elasticsearch:9.5.5";
+    private const string ElasticsearchUsername = "elastic";
+    private const ushort ElasticsearchPort = 9200;
     private static readonly string RabbitMqPassword = Convert.ToHexString(RandomNumberGenerator.GetBytes(16));
+    private static readonly string ElasticsearchPassword = Convert.ToHexString(RandomNumberGenerator.GetBytes(16));
 
     private static readonly SemaphoreSlim Gate = new(1, 1);
     private static PostgreSqlContainer? _database;
     private static RabbitMqContainer? _broker;
     private static MongoDbContainer? _mongo;
     private static RedisContainer? _redis;
+    private static ElasticsearchContainer? _elasticsearch;
     private static KongrooWebApplicationFactory? _factory;
 
     public static KongrooWebApplicationFactory Factory =>
@@ -57,12 +64,28 @@ public static class SpecsEnvironment
                 .Build();
             _mongo = new MongoDbBuilder(MongoDbImage).Build();
             _redis = new RedisBuilder(RedisImage).Build();
+            // Security on over plain HTTP, like compose and k3s; the module's own wait assumes HTTPS in that mode.
+            _elasticsearch = new ElasticsearchBuilder(ElasticsearchImage)
+                .WithPassword(ElasticsearchPassword)
+                .WithEnvironment("xpack.security.http.ssl.enabled", "false")
+                .WithEnvironment("ES_JAVA_OPTS", "-Xms512m -Xmx512m")
+                .WithWaitStrategy(
+                    Wait.ForUnixContainer()
+                        .UntilHttpRequestIsSucceeded(request =>
+                            request
+                                .ForPort(ElasticsearchPort)
+                                .ForPath("/_cluster/health")
+                                .WithBasicAuthentication(ElasticsearchUsername, ElasticsearchPassword)
+                        )
+                )
+                .Build();
 
             await Task.WhenAll(
                 _database.StartAsync(cancellationToken),
                 _broker.StartAsync(cancellationToken),
                 _mongo.StartAsync(cancellationToken),
-                _redis.StartAsync(cancellationToken)
+                _redis.StartAsync(cancellationToken),
+                _elasticsearch.StartAsync(cancellationToken)
             );
 
             _factory = new KongrooWebApplicationFactory(
@@ -72,7 +95,10 @@ public static class SpecsEnvironment
                 RabbitMqUsername,
                 RabbitMqPassword,
                 _mongo.GetConnectionString(),
-                _redis.GetConnectionString()
+                _redis.GetConnectionString(),
+                new Uri($"http://{_elasticsearch.Hostname}:{_elasticsearch.GetMappedPublicPort(ElasticsearchPort)}"),
+                ElasticsearchUsername,
+                ElasticsearchPassword
             );
 
             await WaitForHealthyAsync(cancellationToken);
@@ -121,6 +147,12 @@ public static class SpecsEnvironment
         {
             await _broker.DisposeAsync();
             _broker = null;
+        }
+
+        if (_elasticsearch is not null)
+        {
+            await _elasticsearch.DisposeAsync();
+            _elasticsearch = null;
         }
 
         if (_mongo is not null)

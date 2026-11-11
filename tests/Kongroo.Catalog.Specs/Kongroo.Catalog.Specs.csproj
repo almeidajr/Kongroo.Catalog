@@ -9,6 +9,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Reqnroll.xunit.v3" />
     <PackageReference Include="Shouldly" />
+    <PackageReference Include="Testcontainers.Elasticsearch" />
     <PackageReference Include="Testcontainers.MongoDb" />
     <PackageReference Include="Testcontainers.PostgreSql" />
     <PackageReference Include="Testcontainers.RabbitMq" />

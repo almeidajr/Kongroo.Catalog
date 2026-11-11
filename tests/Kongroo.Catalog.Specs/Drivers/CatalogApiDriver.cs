@@ -37,6 +37,28 @@ public sealed class CatalogApiDriver(ApiScenarioContext scenarioContext)
         scenarioContext.SetLastResponse(response);
     }
 
+    public async Task PublishGameAsync(Guid gameId, string title, string description, decimal priceAmount)
+    {
+        var response = await scenarioContext.Client.PutAsJsonAsync(
+            $"/games/{gameId}",
+            new
+            {
+                title,
+                description,
+                priceAmount,
+                currency = "USD",
+                status = "published",
+            }
+        );
+        scenarioContext.SetLastResponse(response);
+    }
+
+    public async Task SearchAsync(string query)
+    {
+        var response = await scenarioContext.Client.GetAsync($"/search?q={Uri.EscapeDataString(query)}");
+        scenarioContext.SetLastResponse(response);
+    }
+
     public async Task SubmitReviewAsync(Guid gameId, int rating, string? text)
     {
         var response = await scenarioContext.Client.PostAsJsonAsync($"/games/{gameId}/reviews", new { rating, text });

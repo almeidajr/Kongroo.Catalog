@@ -3,10 +3,12 @@ using Kongroo.Catalog.Application;
 using Kongroo.Catalog.Domain;
 using Kongroo.Catalog.Infrastructure;
 using Kongroo.Catalog.IntegrationTests.Fixtures;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
+using NSubstitute;
 using Shouldly;
 
 namespace Kongroo.Catalog.IntegrationTests.Catalog.Application;
@@ -169,7 +171,7 @@ public sealed class GamesCacheInvalidationTests(PostgreSqlFixture postgreSqlFixt
         CancellationToken cancellationToken
     )
     {
-        var handler = new CreateGameCommandHandler(context, cache);
+        var handler = new CreateGameCommandHandler(context, cache, Substitute.For<IPublishEndpoint>());
         var response = await handler.HandleAsync(
             new CreateGameCommand("Portal", "A puzzle platformer.", 19.99m, Currency.Usd),
             cancellationToken

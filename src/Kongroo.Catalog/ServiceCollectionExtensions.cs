@@ -1,3 +1,5 @@
+using Elastic.Clients.Elasticsearch;
+using Elastic.Transport;
 using Kongroo.BuildingBlocks.Application;
 using Kongroo.BuildingBlocks.Infrastructure;
 using Kongroo.Catalog.Application;
@@ -38,6 +40,7 @@ public static class ServiceCollectionExtensions
             services.AddScoped<DeleteGameCommandHandler>();
             services.AddScoped<SubmitReviewCommandHandler>();
             services.AddScoped<GetGameReviewsQueryHandler>();
+            services.AddScoped<SearchGamesQueryHandler>();
 
             services.AddScoped<ApplyPaymentResultCommandHandler>();
 
@@ -86,7 +89,29 @@ public static class ServiceCollectionExtensions
             services.AddHybridCache();
             services.AddOptions<HybridCacheOptions>().Bind(configuration.GetRequiredSection("HybridCache"));
 
+            services.AddSearch(configuration);
+
             services.AddMessaging(configuration);
+        }
+
+        private void AddSearch(IConfiguration configuration)
+        {
+            services
+                .AddOptions<SearchOptions>()
+                .Bind(configuration.GetRequiredSection(SearchOptions.SectionName))
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+            services.AddSingleton(static provider =>
+            {
+                var searchOptions = provider.GetRequiredService<IOptions<SearchOptions>>().Value;
+
+                return new ElasticsearchClient(
+                    new ElasticsearchClientSettings(searchOptions.Uri!).Authentication(
+                        new BasicAuthentication(searchOptions.Username, searchOptions.Password)
+                    )
+                );
+            });
+            services.AddHostedService<GameSearchIndexInitializer>();
         }
 
         private void AddMessaging(IConfiguration configuration)
@@ -113,6 +138,7 @@ public static class ServiceCollectionExtensions
                 });
 
                 busRegistration.AddConsumer<PaymentProcessedIntegrationEventConsumer>();
+                busRegistration.AddConsumer<GameIndexRequestedConsumer>();
 
                 if (transport == MessagingTransport.AmazonSqs)
                 {
@@ -135,6 +161,9 @@ public static class ServiceCollectionExtensions
                             );
                             busFactory.Message<PaymentProcessedIntegrationEvent>(static message =>
                                 message.SetEntityName(MessagingTopics.PaymentProcessed)
+                            );
+                            busFactory.Message<GameIndexRequested>(static message =>
+                                message.SetEntityName(MessagingTopics.GameIndexRequested)
                             );
                             busFactory.ConfigureEndpoints(context);
                         }

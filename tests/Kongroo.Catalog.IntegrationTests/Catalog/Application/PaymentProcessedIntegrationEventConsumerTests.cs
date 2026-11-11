@@ -124,7 +124,11 @@ public sealed class PaymentProcessedIntegrationEventConsumerTests(PostgreSqlFixt
         CancellationToken cancellationToken
     )
     {
-        var createHandler = new CreateGameCommandHandler(context, TestCache.Create());
+        var createHandler = new CreateGameCommandHandler(
+            context,
+            TestCache.Create(),
+            Substitute.For<IPublishEndpoint>()
+        );
         var created = await createHandler.HandleAsync(
             new CreateGameCommand(title, $"{title} description.", priceAmount, Currency.Usd),
             cancellationToken

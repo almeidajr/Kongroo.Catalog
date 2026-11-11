@@ -109,6 +109,18 @@ public static class EndpointRouteBuilderExtensions
                 .WithSummary("Get game reviews")
                 .WithDescription("Returns the average rating, review count and the most recent reviews of a game.");
 
+            routeGroup
+                .MapGet("/search", SearchGamesAsync)
+                .RequireAuthorization()
+                .ProducesValidationProblem()
+                .ProducesProblem(StatusCodes.Status401Unauthorized)
+                .ProducesProblem(StatusCodes.Status500InternalServerError)
+                .WithName("SearchGames")
+                .WithSummary("Search games")
+                .WithDescription(
+                    "Finds published games by words in their title or description, tolerating typing errors, best match first."
+                );
+
             ordersGroup
                 .MapGet("/", GetOrdersAsync)
                 .RequireAuthorization()
@@ -272,6 +284,18 @@ public static class EndpointRouteBuilderExtensions
     )
     {
         var query = new GetGameReviewsQuery(gameId);
+        var response = await handler.HandleAsync(query, cancellationToken);
+
+        return TypedResults.Ok(response);
+    }
+
+    private static async Task<Ok<IReadOnlyList<SearchGameHitResponse>>> SearchGamesAsync(
+        [AsParameters] SearchGamesRequest request,
+        SearchGamesQueryHandler handler,
+        CancellationToken cancellationToken
+    )
+    {
+        var query = new SearchGamesQuery(request.Q!, request.Limit ?? SearchGamesRequest.DefaultLimit);
         var response = await handler.HandleAsync(query, cancellationToken);
 
         return TypedResults.Ok(response);

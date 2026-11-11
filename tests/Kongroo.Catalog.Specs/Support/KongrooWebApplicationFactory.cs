@@ -10,7 +10,10 @@ public sealed class KongrooWebApplicationFactory(
     string rabbitMqUsername,
     string rabbitMqPassword,
     string mongoConnectionString,
-    string redisConnectionString
+    string redisConnectionString,
+    Uri elasticsearchUri,
+    string elasticsearchUsername,
+    string elasticsearchPassword
 ) : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -30,6 +33,9 @@ public sealed class KongrooWebApplicationFactory(
                     ["Mongo:ConnectionString"] = mongoConnectionString,
                     ["Mongo:Database"] = "kongroo_catalog_specs",
                     ["ConnectionStrings:Redis"] = redisConnectionString,
+                    ["Search:Uri"] = elasticsearchUri.ToString(),
+                    ["Search:Username"] = elasticsearchUsername,
+                    ["Search:Password"] = elasticsearchPassword,
                     ["Jwt:Issuer"] = SpecsJwt.Issuer,
                     ["Jwt:Audience"] = SpecsJwt.Audience,
                     ["Jwt:SigningKey"] = SpecsJwt.SigningKey,

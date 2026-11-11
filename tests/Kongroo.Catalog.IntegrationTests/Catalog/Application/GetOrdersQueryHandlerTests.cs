@@ -2,7 +2,9 @@ using Kongroo.Catalog.Application;
 using Kongroo.Catalog.Domain;
 using Kongroo.Catalog.Infrastructure;
 using Kongroo.Catalog.IntegrationTests.Fixtures;
+using MassTransit;
 using Microsoft.Extensions.Time.Testing;
+using NSubstitute;
 using Shouldly;
 
 namespace Kongroo.Catalog.IntegrationTests.Catalog.Application;
@@ -137,7 +139,11 @@ public sealed class GetOrdersQueryHandlerTests(PostgreSqlFixture postgreSqlFixtu
         CancellationToken cancellationToken
     )
     {
-        var createGameHandler = new CreateGameCommandHandler(context, TestCache.Create());
+        var createGameHandler = new CreateGameCommandHandler(
+            context,
+            TestCache.Create(),
+            Substitute.For<IPublishEndpoint>()
+        );
         var createGameResponse = await createGameHandler.HandleAsync(
             new CreateGameCommand(title, $"{title} description.", priceAmount, Currency.Usd),
             cancellationToken

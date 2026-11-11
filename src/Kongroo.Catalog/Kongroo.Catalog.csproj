@@ -9,6 +9,7 @@
     <PackageReference Include="AspNetCore.HealthChecks.Redis" />
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" />
     <PackageReference Include="EFCore.NamingConventions" />
+    <PackageReference Include="Elastic.Clients.Elasticsearch" />
     <PackageReference Include="Kongroo.BuildingBlocks.Application" />
     <PackageReference Include="Kongroo.BuildingBlocks.Domain" />
     <PackageReference Include="Kongroo.BuildingBlocks.Infrastructure" />

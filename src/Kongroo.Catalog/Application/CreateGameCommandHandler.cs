@@ -1,10 +1,15 @@
 using Kongroo.Catalog.Domain;
 using Kongroo.Catalog.Infrastructure;
+using MassTransit;
 using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Kongroo.Catalog.Application;
 
-public sealed class CreateGameCommandHandler(CatalogDbContext context, HybridCache cache)
+public sealed class CreateGameCommandHandler(
+    CatalogDbContext context,
+    HybridCache cache,
+    IPublishEndpoint publishEndpoint
+)
 {
     public async Task<CreateGameResponse> HandleAsync(CreateGameCommand command, CancellationToken cancellationToken)
     {
@@ -15,6 +20,7 @@ public sealed class CreateGameCommandHandler(CatalogDbContext context, HybridCac
         );
 
         context.Games.Add(game);
+        await publishEndpoint.Publish(new GameIndexRequested(game.Id.Value), cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
         await cache.RemoveByTagAsync(GamesCache.Tag, CancellationToken.None);
 

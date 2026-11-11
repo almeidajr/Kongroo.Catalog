@@ -1,7 +1,9 @@
 using Kongroo.Catalog.Application;
 using Kongroo.Catalog.Domain;
 using Kongroo.Catalog.IntegrationTests.Fixtures;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using NSubstitute;
 using Shouldly;
 
 namespace Kongroo.Catalog.IntegrationTests.Catalog.Application;
@@ -17,7 +19,7 @@ public sealed class CreateGameCommandHandlerTests(PostgreSqlFixture postgreSqlFi
     {
         // Arrange
         await using var context = _database.CreateDbContext();
-        var handler = new CreateGameCommandHandler(context, TestCache.Create());
+        var handler = new CreateGameCommandHandler(context, TestCache.Create(), Substitute.For<IPublishEndpoint>());
 
         // Act
         var response = await handler.HandleAsync(
@@ -41,7 +43,7 @@ public sealed class CreateGameCommandHandlerTests(PostgreSqlFixture postgreSqlFi
     {
         // Arrange
         await using var context = _database.CreateDbContext();
-        var handler = new CreateGameCommandHandler(context, TestCache.Create());
+        var handler = new CreateGameCommandHandler(context, TestCache.Create(), Substitute.For<IPublishEndpoint>());
 
         // Act
         var response = await handler.HandleAsync(
