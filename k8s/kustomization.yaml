@@ -6,7 +6,6 @@ namespace: kongroo
 resources:
   - namespace.yaml
   - configmap.yaml
-  - secret.yaml
   - service.yaml
   - deployment.yaml
 
