@@ -19,7 +19,7 @@ public static class SpecsEnvironment
     private const string PostgreSqlImage = "postgres:18.3";
     private const string RabbitMqImage = "rabbitmq:4-management";
     private const string RabbitMqUsername = "kongroo";
-    private const string MongoDbImage = "mongo:8.0";
+    private static readonly string MongoDbImage = Environment.GetEnvironmentVariable("MONGO_TEST_IMAGE") ?? "mongo:8.0";
     private const string RedisImage = "redis:8.2-alpine";
     private const string ElasticsearchImage = "elasticsearch:9.5.5";
     private const string ElasticsearchUsername = "elastic";
