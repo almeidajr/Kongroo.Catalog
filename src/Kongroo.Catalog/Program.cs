@@ -111,14 +111,6 @@ builder.Services.AddCatalogModule(builder.Configuration);
 
 var app = builder.Build();
 
-app.Use(
-    (context, next) =>
-    {
-        context.Response.Headers["X-Kongroo-Release"] = "fase-4";
-        return next(context);
-    }
-);
-
 app.UseSerilogRequestLogging();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
