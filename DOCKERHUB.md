@@ -25,13 +25,13 @@ and Redis (game read caching).
 
 ```bash
 docker run -p 8080:8080 \
-  -e ConnectionStrings__Database="Host=postgres;Database=kongroo_catalog;Username=kongroo;Password=development" \
+  -e ConnectionStrings__Database="<postgres-connection-string>" \
   -e RabbitMq__Host="rabbitmq" \
   -e RabbitMq__User="kongroo" \
-  -e RabbitMq__Pass="development" \
+  -e RabbitMq__Pass="<rabbitmq-password>" \
   -e Jwt__Issuer="Kongroo.Identity.Api" \
   -e Jwt__Audience="Kongroo.Identity.Api" \
-  -e Jwt__SigningKey="<a-secret-key-at-least-32-characters-long>" \
+  -e Jwt__SigningKey="<jwt-signing-key-at-least-32-characters>" \
   josealmeidajr/kongroo-catalog:latest
 ```
 
@@ -78,6 +78,9 @@ nested configuration sections.
 | `Mongo__ConnectionString` | MongoDB connection string (reviews) |
 | `Mongo__Database` | MongoDB database name |
 | `ConnectionStrings__Redis` | Redis endpoint for HybridCache |
+| `Search__Uri` | Elasticsearch endpoint for Game Search (e.g. `http://elasticsearch:9200`) |
+| `Search__Username` | Elasticsearch user |
+| `Search__Password` | Elasticsearch password |
 
 This service validates tokens it did not issue; `Jwt__Issuer`, `Jwt__Audience`,
 and `Jwt__SigningKey` must match the Kongroo Identity service exactly.
