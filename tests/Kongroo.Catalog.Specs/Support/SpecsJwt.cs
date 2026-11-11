@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
@@ -9,7 +10,7 @@ public static class SpecsJwt
 {
     public const string Issuer = "Kongroo.Catalog.Specs";
     public const string Audience = "Kongroo.Catalog.Specs";
-    public const string SigningKey = "Kongroo.Catalog.Specs.SigningKey.For.Bdd.Tests";
+    public static readonly string SigningKey = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
 
     public static string CreateToken(
         Guid userId,

@@ -1,4 +1,5 @@
 using System.Net;
+using System.Security.Cryptography;
 using Kongroo.Catalog.Application;
 using Kongroo.Catalog.Infrastructure;
 using Microsoft.Extensions.Caching.Hybrid;
@@ -16,7 +17,7 @@ public static class SpecsEnvironment
     private const string PostgreSqlImage = "postgres:18.3";
     private const string RabbitMqImage = "rabbitmq:4-management";
     private const string RabbitMqUsername = "kongroo";
-    private const string RabbitMqPassword = "development";
+    private static readonly string RabbitMqPassword = Convert.ToHexString(RandomNumberGenerator.GetBytes(16));
     private const string MongoDbImage = "mongo:8.0";
     private const string RedisImage = "redis:8.2-alpine";
 
