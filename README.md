@@ -85,16 +85,19 @@ two minutes before the message lands in the `_error` queue. On startup Catalog c
 is missing and backfills it from Postgres, retrying until Elasticsearch answers. While Elasticsearch is
 down `GET /search` answers 503 and everything else keeps working.
 
-To rebuild the index, delete it and restart Catalog:
+To rebuild the index, stop Catalog, delete the index and start Catalog again. Stopping first keeps a
+consumer from writing into the deleted index, which Elasticsearch would recreate without the mapping:
 
 ```powershell
 # Docker Compose, from Kongroo.Orchestration
+docker compose stop catalog-api
 docker compose exec elasticsearch sh -c 'printf "user = \"elastic:%s\"\n" "$ELASTIC_PASSWORD" | curl -fs -K - -X DELETE http://localhost:9200/games'
-docker compose restart catalog-api
+docker compose start catalog-api
 
 # Kubernetes
+kubectl -n kongroo scale deployment/catalog-api --replicas=0
 kubectl -n kongroo exec deploy/elasticsearch -- sh -c 'printf "user = \"elastic:%s\"\n" "$ELASTIC_PASSWORD" | curl -fs -K - -X DELETE http://localhost:9200/games'
-kubectl -n kongroo rollout restart deployment/catalog-api
+kubectl -n kongroo scale deployment/catalog-api --replicas=1
 ```
 
 ## Running Locally
