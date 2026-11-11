@@ -15,26 +15,17 @@ public sealed class GameIndexRequestedConsumer(
     [FromKeyedServices(GameSearchPipelines.Indexing)] ResiliencePipeline pipeline
 ) : IConsumer<GameIndexRequested>
 {
-    public async Task Consume(ConsumeContext<GameIndexRequested> context)
+    public async Task Consume(ConsumeContext<GameIndexRequested> context) =>
+        await pipeline.ExecuteAsync(SyncAsync, context.Message.GameId, context.CancellationToken);
+
+    // Reloaded on every attempt, so a retry never writes an older snapshot over a newer message's document.
+    private async ValueTask SyncAsync(Guid gameId, CancellationToken cancellationToken)
     {
         var game = await catalogContext
             .Games.AsNoTracking()
-            .SingleOrDefaultAsync(game => game.Id == GameId.From(context.Message.GameId), context.CancellationToken);
+            .SingleOrDefaultAsync(game => game.Id == GameId.From(gameId), cancellationToken);
 
-        await pipeline.ExecuteAsync(
-            async cancellationToken =>
-            {
-                if (game is null)
-                {
-                    await DeleteAsync(context.Message.GameId, cancellationToken);
-                }
-                else
-                {
-                    await UpsertAsync(game, cancellationToken);
-                }
-            },
-            context.CancellationToken
-        );
+        await (game is null ? DeleteAsync(gameId, cancellationToken) : UpsertAsync(game, cancellationToken));
     }
 
     private async Task DeleteAsync(Guid gameId, CancellationToken cancellationToken)
@@ -50,12 +41,12 @@ public sealed class GameIndexRequestedConsumer(
     private async Task UpsertAsync(Game game, CancellationToken cancellationToken)
     {
         // Indexing into a missing index would auto-create it with a dynamic mapping; only GameSearchIndexInitializer creates it.
-        var exists = await client.Indices.ExistsAsync(GameSearchDocument.IndexName, cancellationToken);
-        if (!exists.Exists)
+        var existsResponse = await client.Indices.ExistsAsync(GameSearchDocument.IndexName, cancellationToken);
+        if (!existsResponse.Exists)
         {
             throw new InvalidOperationException(
-                $"Indexing game '{game.Id.Value}' waits for the '{GameSearchDocument.IndexName}' index: {exists.DebugInformation}",
-                exists.ApiCallDetails.OriginalException
+                $"Indexing game '{game.Id.Value}' waits for the '{GameSearchDocument.IndexName}' index: {existsResponse.DebugInformation}",
+                existsResponse.ApiCallDetails.OriginalException
             );
         }
 
