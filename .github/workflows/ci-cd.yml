@@ -24,8 +24,7 @@ env:
 
 jobs:
   build:
-    # shortcut: mongo:8.0 refuses kernels 6.19-7.0.13 (SERVER-121912); back to ubuntu-latest once its kernel is >= 7.0.14
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     outputs:
       pushed-to-ecr: ${{ steps.ecr.outcome == 'success' }}
     steps:
@@ -96,7 +95,7 @@ jobs:
   deploy:
     needs: build
     if: needs.build.outputs.pushed-to-ecr == 'true'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     concurrency:
       group: deploy-${{ github.repository }}
       cancel-in-progress: false
