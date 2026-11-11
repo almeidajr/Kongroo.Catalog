@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Kongroo.Catalog.Infrastructure;
 
-public sealed class SearchOptions
+public sealed class GameSearchOptions
 {
     public const string SectionName = "Search";
 

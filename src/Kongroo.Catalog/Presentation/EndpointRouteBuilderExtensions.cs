@@ -295,7 +295,7 @@ public static class EndpointRouteBuilderExtensions
         CancellationToken cancellationToken
     )
     {
-        var query = new SearchGamesQuery(request.Q!, request.Limit ?? SearchGamesRequest.DefaultLimit);
+        var query = new SearchGamesQuery(request.Text!, request.Limit ?? SearchGamesRequest.DefaultLimit);
         var response = await handler.HandleAsync(query, cancellationToken);
 
         return TypedResults.Ok(response);

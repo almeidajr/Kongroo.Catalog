@@ -1,10 +1,14 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Kongroo.Catalog.Presentation.Requests;
 
 public sealed record SearchGamesRequest(
-    [property: Required] [property: Description("Words to find in game titles and descriptions.")] string? Q,
+    [FromQuery(Name = "q")]
+    [property: Required]
+    [property: Description("Words to find in game titles and descriptions.")]
+        string? Text,
     [property: Range(1, SearchGamesRequest.MaxLimit)]
     [property: Description("Maximum number of hits, from 1 to 50. Defaults to 20.")]
         int? Limit

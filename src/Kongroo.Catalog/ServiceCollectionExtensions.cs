@@ -97,17 +97,17 @@ public static class ServiceCollectionExtensions
         private void AddSearch(IConfiguration configuration)
         {
             services
-                .AddOptions<SearchOptions>()
-                .Bind(configuration.GetRequiredSection(SearchOptions.SectionName))
+                .AddOptions<GameSearchOptions>()
+                .Bind(configuration.GetRequiredSection(GameSearchOptions.SectionName))
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
             services.AddSingleton(static provider =>
             {
-                var searchOptions = provider.GetRequiredService<IOptions<SearchOptions>>().Value;
+                var gameSearchOptions = provider.GetRequiredService<IOptions<GameSearchOptions>>().Value;
 
                 return new ElasticsearchClient(
-                    new ElasticsearchClientSettings(searchOptions.Uri!).Authentication(
-                        new BasicAuthentication(searchOptions.Username, searchOptions.Password)
+                    new ElasticsearchClientSettings(gameSearchOptions.Uri!).Authentication(
+                        new BasicAuthentication(gameSearchOptions.Username, gameSearchOptions.Password)
                     )
                 );
             });

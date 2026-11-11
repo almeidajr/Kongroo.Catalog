@@ -1,8 +1,8 @@
 namespace Kongroo.Catalog.Infrastructure;
 
 /// <summary>
-/// SNS topic names used with the Amazon SQS transport. They are shared by contract with
-/// Kongroo.Payments and the Kongroo.Notifications SAM template — change all three together.
+/// SNS topic names used with the Amazon SQS transport. The cross-service ones are shared by
+/// contract with Kongroo.Payments and the Kongroo.Notifications SAM template — change all three together.
 /// </summary>
 public static class MessagingTopics
 {
