@@ -17,9 +17,9 @@ public static class SpecsEnvironment
     private const string PostgreSqlImage = "postgres:18.3";
     private const string RabbitMqImage = "rabbitmq:4-management";
     private const string RabbitMqUsername = "kongroo";
-    private static readonly string RabbitMqPassword = Convert.ToHexString(RandomNumberGenerator.GetBytes(16));
     private const string MongoDbImage = "mongo:8.0";
     private const string RedisImage = "redis:8.2-alpine";
+    private static readonly string RabbitMqPassword = Convert.ToHexString(RandomNumberGenerator.GetBytes(16));
 
     private static readonly SemaphoreSlim Gate = new(1, 1);
     private static PostgreSqlContainer? _database;
