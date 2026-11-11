@@ -35,7 +35,7 @@ public sealed class SearchStepDefinitions(CatalogApiDriver catalogApiDriver, Api
     {
         var hitIds = await PollSearchUntilAsync(
             query,
-            hitIds => hitIds is [var firstHitId, ..] && firstHitId == scenarioContext.GameId
+            currentHitIds => currentHitIds is [var firstHitId, ..] && firstHitId == scenarioContext.GameId
         );
 
         hitIds.ShouldNotBeEmpty();
@@ -53,7 +53,10 @@ public sealed class SearchStepDefinitions(CatalogApiDriver catalogApiDriver, Api
     [Then("searching for {string} eventually no longer returns the game")]
     public async Task ThenSearchingEventuallyNoLongerReturnsTheGame(string query)
     {
-        var hitIds = await PollSearchUntilAsync(query, hitIds => !hitIds.Contains(scenarioContext.GameId));
+        var hitIds = await PollSearchUntilAsync(
+            query,
+            currentHitIds => !currentHitIds.Contains(scenarioContext.GameId)
+        );
 
         hitIds.ShouldNotContain(scenarioContext.GameId);
     }
