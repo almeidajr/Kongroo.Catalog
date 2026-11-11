@@ -1,5 +1,7 @@
 # <img alt="Kongroo" src="./logo.png" width="40"/> Kongroo.Catalog
 
+[![CI/CD](https://github.com/almeidajr/Kongroo.Catalog/actions/workflows/ci-cd.yml/badge.svg?branch=master)](https://github.com/almeidajr/Kongroo.Catalog/actions/workflows/ci-cd.yml)
+
 Game catalog and user library microservice for FIAP Cloud Games.
 
 ## Endpoints
