@@ -44,7 +44,7 @@ public sealed class SearchGamesQueryHandler(ElasticsearchClient client)
 
         if (!response.IsValidResponse)
         {
-            throw new InvalidOperationException(
+            throw new GameSearchUnavailableException(
                 $"Searching games failed: {response.DebugInformation}",
                 response.ApiCallDetails.OriginalException
             );

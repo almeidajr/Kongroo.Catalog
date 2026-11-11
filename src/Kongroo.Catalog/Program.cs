@@ -64,7 +64,8 @@ builder
         name: "mongodb",
         tags: ["ready"]
     )
-    .AddRedis(_ => builder.Configuration.GetRequiredConnectionString("Redis"), name: "redis", tags: ["ready"]);
+    .AddRedis(_ => builder.Configuration.GetRequiredConnectionString("Redis"), name: "redis", tags: ["ready"])
+    .AddCheck<ElasticsearchHealthCheck>("elasticsearch");
 
 builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
