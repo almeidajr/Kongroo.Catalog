@@ -21,6 +21,8 @@ env:
   AWS_REGION: us-east-1
   EKS_CLUSTER: kongroo
   NAMESPACE: kongroo
+  # shortcut: mongo:8.0 refuses runner kernels 6.19-7.0.13 (SERVER-121912); drop this once they reach 7.0.14
+  MONGO_TEST_IMAGE: mongo:8.2
 
 jobs:
   build:
