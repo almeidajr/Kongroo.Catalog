@@ -17,7 +17,8 @@ Game catalog and user library microservice for FIAP Cloud Games.
 - `GET /orders/{id}` — Get order by ID
 - `GET /ownerships` — List user game ownerships
 - `GET /ownerships/{id}` — Get ownership by ID
-- `GET /health` — Health check
+- `GET /search?q=…&limit=…` — Game Search over published games (any authenticated user) — Elasticsearch
+- `GET /health` — Health check (includes Elasticsearch); `GET /health/ready` leaves Elasticsearch out
 - `GET /metrics` — Prometheus metrics
 
 ## Messaging
@@ -75,6 +76,26 @@ by the Prometheus deployed from Kongroo.Orchestration.
 
 Game reads (`GET /games`, `GET /games/{id}`) go through `HybridCache` with Redis as the distributed
 tier (5 min) and an in-process tier (1 min). Every game or promotion write evicts the `games` tag.
+
+## Game Search
+
+Every game create, update and delete publishes `GameIndexRequested` through the outbox; Catalog consumes
+it itself and upserts or deletes the game's document in the `games` index, retrying with backoff for about
+two minutes before the message lands in the `_error` queue. On startup Catalog creates the index when it
+is missing and backfills it from Postgres, retrying until Elasticsearch answers. While Elasticsearch is
+down `GET /search` answers 503 and everything else keeps working.
+
+To rebuild the index, delete it and restart Catalog:
+
+```powershell
+# Docker Compose, from Kongroo.Orchestration
+docker compose exec elasticsearch sh -c 'printf "user = \"elastic:%s\"\n" "$ELASTIC_PASSWORD" | curl -fs -K - -X DELETE http://localhost:9200/games'
+docker compose restart catalog-api
+
+# Kubernetes
+kubectl -n kongroo exec deploy/elasticsearch -- sh -c 'printf "user = \"elastic:%s\"\n" "$ELASTIC_PASSWORD" | curl -fs -K - -X DELETE http://localhost:9200/games'
+kubectl -n kongroo rollout restart deployment/catalog-api
+```
 
 ## Running Locally
 
