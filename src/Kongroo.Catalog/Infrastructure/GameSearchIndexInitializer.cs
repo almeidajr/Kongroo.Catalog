@@ -61,29 +61,11 @@ public sealed class GameSearchIndexInitializer(
 
     private async ValueTask BackfillAsync(CancellationToken cancellationToken)
     {
-        await using var scope = scopeFactory.CreateAsyncScope();
-        var catalogContext = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
-
-        // shortcut: one bulk request for every game; page it if the catalog grows past a few thousand games.
-        var games = await catalogContext.Games.AsNoTracking().ToListAsync(cancellationToken);
-        var documents = games.Select(GameSearchDocument.From).ToList();
+        var documents = await LoadDocumentsAsync(cancellationToken);
 
         if (documents.Count > 0)
         {
-            var response = await client.BulkAsync(
-                bulk =>
-                    bulk.Index(GameSearchDocument.IndexName)
-                        .IndexMany(documents, static (operation, document) => operation.Id(document.Id)),
-                cancellationToken
-            );
-
-            if (!response.IsValidResponse)
-            {
-                throw new InvalidOperationException(
-                    $"Backfilling the '{GameSearchDocument.IndexName}' index failed: {response.DebugInformation}",
-                    response.ApiCallDetails.OriginalException
-                );
-            }
+            await CreateDocumentsAsync(documents, cancellationToken);
         }
 
         logger.LogInformation(
@@ -91,5 +73,39 @@ public sealed class GameSearchIndexInitializer(
             documents.Count,
             GameSearchDocument.IndexName
         );
+    }
+
+    private async Task<List<GameSearchDocument>> LoadDocumentsAsync(CancellationToken cancellationToken)
+    {
+        await using var scope = scopeFactory.CreateAsyncScope();
+        var catalogContext = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
+
+        // shortcut: one bulk request for every game; page it if the catalog grows past a few thousand games.
+        var games = await catalogContext.Games.AsNoTracking().ToListAsync(cancellationToken);
+
+        return [.. games.Select(GameSearchDocument.From)];
+    }
+
+    // Create, not index: a document the consumer already wrote is newer than this read and must win.
+    private async Task CreateDocumentsAsync(List<GameSearchDocument> documents, CancellationToken cancellationToken)
+    {
+        var response = await client.BulkAsync(
+            bulk =>
+                bulk.Index(GameSearchDocument.IndexName)
+                    .CreateMany(documents, static (operation, document) => operation.Id(document.Id)),
+            cancellationToken
+        );
+
+        var hasFailed =
+            !response.ApiCallDetails.HasSuccessfulStatusCode
+            || response.ItemsWithErrors.Any(static item => item.Status != StatusCodes.Status409Conflict);
+
+        if (hasFailed)
+        {
+            throw new InvalidOperationException(
+                $"Backfilling the '{GameSearchDocument.IndexName}' index failed: {response.DebugInformation}",
+                response.ApiCallDetails.OriginalException
+            );
+        }
     }
 }
