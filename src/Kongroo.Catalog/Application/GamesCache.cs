@@ -7,4 +7,6 @@ public static class GamesCache
     public const string ListKey = "games:all";
 
     public static string GameKey(Guid gameId) => $"games:{gameId}";
+
+    public static string ReviewsKey(Guid gameId) => $"games:{gameId}:reviews";
 }

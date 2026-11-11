@@ -25,7 +25,12 @@ public sealed class SubmitReviewCommandHandlerTests(PostgreSqlFixture postgreSql
         await using var context = _database.CreateDbContext();
         var gameId = await CreateGameAsync(context, TestContext.Current.CancellationToken);
         var customerId = Guid.NewGuid();
-        var handler = new SubmitReviewCommandHandler(context, _reviews.Collection, new FakeTimeProvider(SubmittedAt));
+        var handler = new SubmitReviewCommandHandler(
+            context,
+            _reviews.Collection,
+            new FakeTimeProvider(SubmittedAt),
+            TestCache.Create()
+        );
 
         // Act
         var response = await handler.HandleAsync(
@@ -55,7 +60,12 @@ public sealed class SubmitReviewCommandHandlerTests(PostgreSqlFixture postgreSql
         // Arrange
         await using var context = _database.CreateDbContext();
         var missingGameId = Guid.NewGuid();
-        var handler = new SubmitReviewCommandHandler(context, _reviews.Collection, new FakeTimeProvider(SubmittedAt));
+        var handler = new SubmitReviewCommandHandler(
+            context,
+            _reviews.Collection,
+            new FakeTimeProvider(SubmittedAt),
+            TestCache.Create()
+        );
 
         // Act
         var exception = await Should.ThrowAsync<NotFoundException>(() =>
@@ -77,7 +87,12 @@ public sealed class SubmitReviewCommandHandlerTests(PostgreSqlFixture postgreSql
         await using var context = _database.CreateDbContext();
         var gameId = await CreateGameAsync(context, TestContext.Current.CancellationToken);
         var customerId = Guid.NewGuid();
-        var handler = new SubmitReviewCommandHandler(context, _reviews.Collection, new FakeTimeProvider(SubmittedAt));
+        var handler = new SubmitReviewCommandHandler(
+            context,
+            _reviews.Collection,
+            new FakeTimeProvider(SubmittedAt),
+            TestCache.Create()
+        );
         await handler.HandleAsync(
             new SubmitReviewCommand(gameId.Value, customerId, "Ada Lovelace", 5, null),
             TestContext.Current.CancellationToken

@@ -83,13 +83,8 @@ public static class ServiceCollectionExtensions
                 redisOptions.Configuration = configuration.GetRequiredConnectionString("Redis");
                 redisOptions.InstanceName = "catalog:";
             });
-            services.AddHybridCache(cacheOptions =>
-                cacheOptions.DefaultEntryOptions = new HybridCacheEntryOptions
-                {
-                    Expiration = TimeSpan.FromMinutes(5),
-                    LocalCacheExpiration = TimeSpan.FromMinutes(1),
-                }
-            );
+            services.AddHybridCache();
+            services.Configure<HybridCacheOptions>(configuration.GetSection("HybridCache"));
 
             services.AddMessaging(configuration);
         }

@@ -2,15 +2,34 @@ using Kongroo.BuildingBlocks.Domain.Exceptions;
 using Kongroo.Catalog.Domain;
 using Kongroo.Catalog.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 using MongoDB.Driver;
 
 namespace Kongroo.Catalog.Application;
 
-public sealed class GetGameReviewsQueryHandler(CatalogDbContext context, IMongoCollection<ReviewDocument> reviews)
+public sealed class GetGameReviewsQueryHandler(
+    CatalogDbContext context,
+    IMongoCollection<ReviewDocument> reviews,
+    HybridCache cache
+)
 {
     public const int MaxReviews = 100;
 
     public async Task<GetGameReviewsResponse> HandleAsync(
+        GetGameReviewsQuery query,
+        CancellationToken cancellationToken
+    ) =>
+        await cache.GetOrCreateAsync(
+            GamesCache.ReviewsKey(query.GameId),
+            (context, reviews, query),
+            static (state, token) => LoadAsync(state.context, state.reviews, state.query, token),
+            tags: [GamesCache.Tag],
+            cancellationToken: cancellationToken
+        );
+
+    private static async ValueTask<GetGameReviewsResponse> LoadAsync(
+        CatalogDbContext context,
+        IMongoCollection<ReviewDocument> reviews,
         GetGameReviewsQuery query,
         CancellationToken cancellationToken
     )

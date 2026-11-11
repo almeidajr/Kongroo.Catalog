@@ -3,6 +3,7 @@ using Kongroo.Catalog.Application;
 using Kongroo.Catalog.Domain;
 using Kongroo.Catalog.Infrastructure;
 using Kongroo.Catalog.IntegrationTests.Fixtures;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Time.Testing;
 using Shouldly;
 
@@ -16,6 +17,7 @@ public sealed class GetGameReviewsQueryHandlerTests(PostgreSqlFixture postgreSql
     private static readonly DateTimeOffset FirstAt = new(2026, 9, 10, 12, 0, 0, TimeSpan.Zero);
     private readonly CatalogTestDatabase _database = new(postgreSqlFixture);
     private readonly ReviewsTestCollection _reviews = new(mongoDbFixture);
+    private readonly HybridCache _cache = TestCache.Create();
 
     [Fact]
     public async Task HandleAsync_WithTwoReviews_ShouldReturnAverageCountAndNewestFirst()
@@ -24,6 +26,8 @@ public sealed class GetGameReviewsQueryHandlerTests(PostgreSqlFixture postgreSql
         await using var context = _database.CreateDbContext();
         var gameId = await CreateGameAsync(context, TestContext.Current.CancellationToken);
         await SubmitAsync(context, gameId, "Ada Lovelace", 5, FirstAt, TestContext.Current.CancellationToken);
+        var handler = new GetGameReviewsQueryHandler(context, _reviews.Collection, _cache);
+        await handler.HandleAsync(new GetGameReviewsQuery(gameId.Value), TestContext.Current.CancellationToken);
         await SubmitAsync(
             context,
             gameId,
@@ -32,7 +36,6 @@ public sealed class GetGameReviewsQueryHandlerTests(PostgreSqlFixture postgreSql
             FirstAt.AddMinutes(5),
             TestContext.Current.CancellationToken
         );
-        var handler = new GetGameReviewsQueryHandler(context, _reviews.Collection);
 
         // Act
         var response = await handler.HandleAsync(
@@ -57,7 +60,7 @@ public sealed class GetGameReviewsQueryHandlerTests(PostgreSqlFixture postgreSql
         // Arrange
         await using var context = _database.CreateDbContext();
         var gameId = await CreateGameAsync(context, TestContext.Current.CancellationToken);
-        var handler = new GetGameReviewsQueryHandler(context, _reviews.Collection);
+        var handler = new GetGameReviewsQueryHandler(context, _reviews.Collection, _cache);
 
         // Act
         var response = await handler.HandleAsync(
@@ -79,7 +82,7 @@ public sealed class GetGameReviewsQueryHandlerTests(PostgreSqlFixture postgreSql
         // Arrange
         await using var context = _database.CreateDbContext();
         var missingGameId = Guid.NewGuid();
-        var handler = new GetGameReviewsQueryHandler(context, _reviews.Collection);
+        var handler = new GetGameReviewsQueryHandler(context, _reviews.Collection, _cache);
 
         // Act
         var exception = await Should.ThrowAsync<NotFoundException>(() =>
@@ -107,7 +110,12 @@ public sealed class GetGameReviewsQueryHandlerTests(PostgreSqlFixture postgreSql
         CancellationToken cancellationToken
     )
     {
-        var handler = new SubmitReviewCommandHandler(context, _reviews.Collection, new FakeTimeProvider(submittedAt));
+        var handler = new SubmitReviewCommandHandler(
+            context,
+            _reviews.Collection,
+            new FakeTimeProvider(submittedAt),
+            _cache
+        );
         await handler.HandleAsync(
             new SubmitReviewCommand(gameId.Value, Guid.NewGuid(), customerName, rating, null),
             cancellationToken

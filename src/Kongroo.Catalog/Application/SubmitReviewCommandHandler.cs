@@ -2,6 +2,7 @@ using Kongroo.BuildingBlocks.Domain.Exceptions;
 using Kongroo.Catalog.Domain;
 using Kongroo.Catalog.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 using MongoDB.Driver;
 
 namespace Kongroo.Catalog.Application;
@@ -9,7 +10,8 @@ namespace Kongroo.Catalog.Application;
 public sealed class SubmitReviewCommandHandler(
     CatalogDbContext context,
     IMongoCollection<ReviewDocument> reviews,
-    TimeProvider timeProvider
+    TimeProvider timeProvider,
+    HybridCache cache
 )
 {
     public const string ResourceName = "Review";
@@ -44,6 +46,8 @@ public sealed class SubmitReviewCommandHandler(
         {
             throw new ConflictException(ResourceName, $"customer already reviewed game '{command.GameId}'", exception);
         }
+
+        await cache.RemoveAsync(GamesCache.ReviewsKey(command.GameId), CancellationToken.None);
 
         return document.ToResponse();
     }
