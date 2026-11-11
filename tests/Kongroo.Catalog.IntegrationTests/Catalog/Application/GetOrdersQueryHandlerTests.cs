@@ -152,7 +152,8 @@ public sealed class GetOrdersQueryHandlerTests(PostgreSqlFixture postgreSqlFixtu
         var updateGameHandler = new UpdateGameCommandHandler(
             context,
             new FakeTimeProvider(DateTimeOffset.UtcNow),
-            TestCache.Create()
+            TestCache.Create(),
+            Substitute.For<IPublishEndpoint>()
         );
         await updateGameHandler.HandleAsync(
             new UpdateGameCommand(

@@ -24,7 +24,12 @@ public sealed class UpdateGameCommandHandlerTests(PostgreSqlFixture postgreSqlFi
         await using var context = _database.CreateDbContext();
         var gameId = await CreateGameAsync(context, TestContext.Current.CancellationToken);
 
-        var handler = new UpdateGameCommandHandler(context, new FakeTimeProvider(), TestCache.Create());
+        var handler = new UpdateGameCommandHandler(
+            context,
+            new FakeTimeProvider(),
+            TestCache.Create(),
+            Substitute.For<IPublishEndpoint>()
+        );
 
         // Act
         var response = await handler.HandleAsync(
@@ -57,7 +62,12 @@ public sealed class UpdateGameCommandHandlerTests(PostgreSqlFixture postgreSqlFi
         await using var context = _database.CreateDbContext();
         var gameId = await CreateGameAsync(context, TestContext.Current.CancellationToken);
 
-        var handler = new UpdateGameCommandHandler(context, new FakeTimeProvider(), TestCache.Create());
+        var handler = new UpdateGameCommandHandler(
+            context,
+            new FakeTimeProvider(),
+            TestCache.Create(),
+            Substitute.For<IPublishEndpoint>()
+        );
 
         // Act
         await handler.HandleAsync(
@@ -94,7 +104,12 @@ public sealed class UpdateGameCommandHandlerTests(PostgreSqlFixture postgreSqlFi
         // Arrange
         await using var context = _database.CreateDbContext();
         var missingGameId = Guid.NewGuid();
-        var handler = new UpdateGameCommandHandler(context, new FakeTimeProvider(), TestCache.Create());
+        var handler = new UpdateGameCommandHandler(
+            context,
+            new FakeTimeProvider(),
+            TestCache.Create(),
+            Substitute.For<IPublishEndpoint>()
+        );
 
         // Act
         var exception = await Should.ThrowAsync<NotFoundException>(() =>

@@ -61,7 +61,12 @@ public sealed class GamesCacheInvalidationTests(PostgreSqlFixture postgreSqlFixt
         var before = await reader.HandleAsync(new GetGameQuery(gameId.Value), TestContext.Current.CancellationToken);
         before.Title.ShouldBe("Portal");
 
-        var updater = new UpdateGameCommandHandler(context, new FakeTimeProvider(ReadAt), cache);
+        var updater = new UpdateGameCommandHandler(
+            context,
+            new FakeTimeProvider(ReadAt),
+            cache,
+            Substitute.For<IPublishEndpoint>()
+        );
         await updater.HandleAsync(
             new UpdateGameCommand(
                 gameId.Value,

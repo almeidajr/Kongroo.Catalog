@@ -1,12 +1,18 @@
 using Kongroo.BuildingBlocks.Domain.Exceptions;
 using Kongroo.Catalog.Domain;
 using Kongroo.Catalog.Infrastructure;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Kongroo.Catalog.Application;
 
-public sealed class UpdateGameCommandHandler(CatalogDbContext context, TimeProvider timeProvider, HybridCache cache)
+public sealed class UpdateGameCommandHandler(
+    CatalogDbContext context,
+    TimeProvider timeProvider,
+    HybridCache cache,
+    IPublishEndpoint publishEndpoint
+)
 {
     public async Task<GetGameResponse> HandleAsync(UpdateGameCommand command, CancellationToken cancellationToken)
     {
@@ -21,6 +27,7 @@ public sealed class UpdateGameCommandHandler(CatalogDbContext context, TimeProvi
         game.ChangePrice(Money.From(command.PriceAmount, command.Currency));
         game.ChangeStatus(command.Status);
 
+        await publishEndpoint.Publish(new GameIndexRequested(game.Id.Value), cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
         await cache.RemoveByTagAsync(GamesCache.Tag, CancellationToken.None);
 

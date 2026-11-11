@@ -132,7 +132,12 @@ public sealed class GetGameQueryHandlerTests(PostgreSqlFixture postgreSqlFixture
     )
     {
         var gameId = await CreateGameAsync(context, cancellationToken);
-        var handler = new UpdateGameCommandHandler(context, new FakeTimeProvider(ReadAt), TestCache.Create());
+        var handler = new UpdateGameCommandHandler(
+            context,
+            new FakeTimeProvider(ReadAt),
+            TestCache.Create(),
+            Substitute.For<IPublishEndpoint>()
+        );
         await handler.HandleAsync(
             new UpdateGameCommand(
                 gameId.Value,

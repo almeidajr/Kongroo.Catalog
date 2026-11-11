@@ -171,7 +171,12 @@ public sealed class ApplyPaymentResultCommandHandlerTests(PostgreSqlFixture post
             cancellationToken
         );
 
-        var updateHandler = new UpdateGameCommandHandler(context, new FakeTimeProvider(PlacedAt), TestCache.Create());
+        var updateHandler = new UpdateGameCommandHandler(
+            context,
+            new FakeTimeProvider(PlacedAt),
+            TestCache.Create(),
+            Substitute.For<IPublishEndpoint>()
+        );
         await updateHandler.HandleAsync(
             new UpdateGameCommand(
                 created.Id,
