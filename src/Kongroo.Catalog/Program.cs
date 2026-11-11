@@ -50,6 +50,7 @@ builder.Services.AddOpenApi(options =>
 });
 
 builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GameSearchUnavailableExceptionHandler>();
 builder.Services.AddExceptionHandler<DomainExceptionHandler>();
 
 builder

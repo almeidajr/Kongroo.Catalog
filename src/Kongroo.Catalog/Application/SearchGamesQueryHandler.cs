@@ -44,13 +44,20 @@ public sealed class SearchGamesQueryHandler(ElasticsearchClient client)
 
         if (!response.IsValidResponse)
         {
-            throw new GameSearchUnavailableException(
-                $"Searching games failed: {response.DebugInformation}",
-                response.ApiCallDetails.OriginalException
-            );
+            throw Failure(response);
         }
 
         return [.. response.Hits.Select(ToResponse)];
+    }
+
+    private static Exception Failure(SearchResponse<GameSearchDocument> response)
+    {
+        var message = $"Searching games failed: {response.DebugInformation}";
+        var innerException = response.ApiCallDetails.OriginalException;
+
+        return response.ApiCallDetails.HttpStatusCode is null or >= StatusCodes.Status500InternalServerError
+            ? new GameSearchUnavailableException(message, innerException)
+            : new InvalidOperationException(message, innerException);
     }
 
     private static SearchGameHitResponse ToResponse(Hit<GameSearchDocument> hit)

@@ -290,28 +290,16 @@ public static class EndpointRouteBuilderExtensions
         return TypedResults.Ok(response);
     }
 
-    private static async Task<Results<Ok<IReadOnlyList<SearchGameHitResponse>>, ProblemHttpResult>> SearchGamesAsync(
+    private static async Task<Ok<IReadOnlyList<SearchGameHitResponse>>> SearchGamesAsync(
         [AsParameters] SearchGamesRequest request,
         SearchGamesQueryHandler handler,
-        ILogger<SearchGamesQueryHandler> logger,
         CancellationToken cancellationToken
     )
     {
         var query = new SearchGamesQuery(request.Text!, request.Limit ?? SearchGamesRequest.DefaultLimit);
+        var response = await handler.HandleAsync(query, cancellationToken);
 
-        try
-        {
-            return TypedResults.Ok(await handler.HandleAsync(query, cancellationToken));
-        }
-        catch (GameSearchUnavailableException exception)
-        {
-            logger.LogWarning(exception, "Game Search is unavailable");
-
-            return TypedResults.Problem(
-                detail: "Game Search is temporarily unavailable.",
-                statusCode: StatusCodes.Status503ServiceUnavailable
-            );
-        }
+        return TypedResults.Ok(response);
     }
 
     private static async Task<Ok<IReadOnlyList<GetOrderResponse>>> GetOrdersAsync(
