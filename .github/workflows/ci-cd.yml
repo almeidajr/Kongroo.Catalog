@@ -1,0 +1,118 @@
+name: CI/CD
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  IMAGE: josealmeidajr/kongroo-catalog
+  ECR_REPOSITORY: kongroo-catalog
+  DEPLOYMENT: catalog-api
+  AWS_REGION: us-east-1
+  EKS_CLUSTER: kongroo
+  NAMESPACE: kongroo
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      pushed-to-ecr: ${{ steps.ecr.outcome == 'success' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: |
+          dotnet tool restore
+          dotnet restore --locked-mode
+
+      - name: Check formatting
+        run: dotnet csharpier check .
+
+      - name: Build
+        run: dotnet build --no-restore
+
+      - name: Test
+        run: dotnet test --no-build
+
+      - name: Scan repository for secrets
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: secret
+          exit-code: "1"
+
+      - name: Build image
+        run: docker build -t "$IMAGE:$GITHUB_SHA" .
+
+      - name: Scan image
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: image
+          image-ref: ${{ env.IMAGE }}:${{ github.sha }}
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Push to Docker Hub
+        id: dockerhub
+        if: github.ref == 'refs/heads/master'
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          echo "$DOCKERHUB_TOKEN" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
+          docker push "$IMAGE:$GITHUB_SHA"
+
+      - name: Push to ECR
+        id: ecr
+        if: steps.dockerhub.outcome == 'success' && vars.ECR_REGISTRY != ''
+        env:
+          ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+        run: |
+          aws sts get-caller-identity > /dev/null || { echo "::error::Lab credentials expired: run eks/arm.ps1"; exit 1; }
+          aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+          docker tag "$IMAGE:$GITHUB_SHA" "$ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA"
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA"
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.pushed-to-ecr == 'true'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-${{ github.repository }}
+      cancel-in-progress: false
+    env:
+      ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+    steps:
+      - name: Check Lab credentials
+        run: |
+          aws sts get-caller-identity > /dev/null || { echo "::error::Lab credentials expired: run eks/arm.ps1"; exit 1; }
+
+      - name: Configure kubectl
+        run: aws eks update-kubeconfig --region "$AWS_REGION" --name "$EKS_CLUSTER"
+
+      - name: Roll out
+        run: |
+          kubectl -n "$NAMESPACE" set image "deployment/$DEPLOYMENT" "$DEPLOYMENT=$ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA"
+          kubectl -n "$NAMESPACE" rollout status "deployment/$DEPLOYMENT" --timeout=10m
