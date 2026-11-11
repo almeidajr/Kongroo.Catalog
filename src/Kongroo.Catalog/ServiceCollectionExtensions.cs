@@ -84,7 +84,7 @@ public static class ServiceCollectionExtensions
                 redisOptions.InstanceName = "catalog:";
             });
             services.AddHybridCache();
-            services.Configure<HybridCacheOptions>(configuration.GetSection("HybridCache"));
+            services.AddOptions<HybridCacheOptions>().Bind(configuration.GetRequiredSection("HybridCache"));
 
             services.AddMessaging(configuration);
         }
